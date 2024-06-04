@@ -20,6 +20,7 @@ permissions:
   # IMPORTANT: this permission is mandatory for trusted publishing
   id-token: write
 
+
 jobs:
   deploy:
 
@@ -27,6 +28,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        repository: siliconflow/nexfort
+        token: ${{ secrets.GH_NEX_PRIV_TOKEN }}
+        submodules: true
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
