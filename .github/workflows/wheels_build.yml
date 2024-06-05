@@ -198,6 +198,7 @@ jobs:
         with:
           repository: siliconflow/nexfort
           token: ${{ secrets.GH_NEX_PRIV_TOKEN }}
+          ref: fix-for-pypi
           submodules: recursive
           path: "."
           fetch-depth: 0 # for tags

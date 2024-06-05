@@ -1,2 +1,2 @@
 # Nexfort Public Releases
-Next Generation Acceleration Extention for PyTorch.
+Next Generation Acceleration Extension for PyTorch.
