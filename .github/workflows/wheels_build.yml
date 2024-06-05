@@ -226,7 +226,7 @@ jobs:
           echo "NEXFORT_BUILD_LOCAL_VERSION=${torch_version_suffix}${cuda_version_suffix}" >> ${GITHUB_ENV}
           echo "NEXFORT_BUILD_LOCAL_VERSION=${torch_version_suffix}${cuda_version_suffix}" >> ${GITHUB_OUTPUT}
           cat ${GITHUB_ENV}
-      - run: echo "NEXFORT_BUILD_LOCAL_VERSION=${LOCAL_VERSION}"
+      - run: echo "NEXFORT_BUILD_LOCAL_VERSION=${NEXFORT_BUILD_LOCAL_VERSION}"
 
       # - name: Setup proper pytorch dependency in "requirements.txt"
       #   run: |
