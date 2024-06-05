@@ -36,6 +36,9 @@ on:
         required: false
         default: "1"
         description: "Set to the number of jobs to run in parallel"
+    secrets:
+      GH_NEX_PRIV_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       os:
@@ -193,6 +196,8 @@ jobs:
       - name: Recursive checkout
         uses: actions/checkout@v3
         with:
+          repository: siliconflow/nexfort
+          token: ${{ secrets.GH_NEX_PRIV_TOKEN }}
           submodules: recursive
           path: "."
           fetch-depth: 0 # for tags

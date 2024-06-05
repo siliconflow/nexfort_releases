@@ -53,12 +53,13 @@ jobs:
           - torch_version: "2.3.0"
             cuda_short_version: "124"
     uses: ./.github/workflows/wheels_build.yml
-    if: github.repository == 'siliconflow/nexfort' || github.event_name == 'pull_request'
     with:
       os: ${{ matrix.os }}
       python: ${{ matrix.python }}
       torch_version: ${{ matrix.torch_version }}
       cuda_short_version: ${{ matrix.cuda_short_version }}
+    secrets:
+      GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
 
   deploy:
     needs: build
