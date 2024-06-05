@@ -1,0 +1,283 @@
+name: wheels_build
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        required: true
+        default: "ubuntu-20.04"
+        description: "Example: ubuntu-20.04 or windows-2019"
+      python:
+        type: string
+        required: true
+        default: "3.10"
+        description: "Example: 3.10"
+      torch_version:
+        type: string
+        required: true
+        description: "Example: 2.3.0 or 2.4.0.dev20240507"
+      cuda_short_version:
+        type: string
+        required: true
+        description: "Example: 121 for 12.1"
+      cythonize:
+        type: string
+        required: false
+        default: "1"
+        description: "Set to 0 to disable cythonized build"
+      with_cutlass:
+        type: string
+        required: false
+        default: "0"
+        description: "Set to 1 to build with cutlass"
+      max_jobs:
+        type: string
+        required: false
+        default: "1"
+        description: "Set to the number of jobs to run in parallel"
+  workflow_dispatch:
+    inputs:
+      os:
+        type: string
+        required: true
+        default: "ubuntu-20.04"
+        description: "Example: ubuntu-20.04 or windows-2019"
+      python:
+        type: string
+        required: true
+        default: "3.10"
+        description: "Example: 3.10"
+      torch_version:
+        type: string
+        required: true
+        description: "Example: 2.3.0 or 2.4.0.dev20240507"
+      cuda_short_version:
+        type: string
+        required: true
+        description: "Example: 121 for 12.1"
+      cythonize:
+        type: string
+        required: false
+        default: "1"
+        description: "Set to 0 to disable cythonized build"
+      with_cutlass:
+        type: string
+        required: false
+        default: "0"
+        description: "Set to 1 to build with cutlass"
+      max_jobs:
+        type: string
+        required: false
+        default: "1"
+        description: "Set to the number of jobs to run in parallel"
+
+# this yaml file can be cleaned up using yaml anchors, but they're not supported in github actions yet
+# https://github.com/actions/runner/issues/1182
+
+env:
+  # you need at least cuda 5.0 for some of the stuff compiled here.
+  # TORCH_CUDA_ARCH_LIST: "5.0+PTX 6.0 6.1 7.0 7.5 8.0+PTX"
+  # Feature 'f16 arithemetic and compare instructions' requires .target sm_53 or higher
+  # TORCH_CUDA_ARCH_LIST: "7.0+PTX 8.0+PTX 9.0a 9.0+PTX"
+  MAX_JOBS: ${{ inputs.max_jobs }}
+  DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
+  TWINE_USERNAME: __token__
+
+jobs:
+  build_internal:
+    name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
+    runs-on: ${{ inputs.os }}
+    env:
+      # alias for the current python version
+      # windows does not have per version binary, it is just 'python3'
+      PY: python${{ contains(inputs.os, 'ubuntu') && inputs.python || '3' }}
+      NEXFORT_BUILD_CYTHONIZE: ${{ inputs.cythonize }}
+      NEXFORT_BUILD_WITH_CUTLASS: ${{ inputs.with_cutlass }}
+
+    # container: ${{ contains(inputs.os, 'ubuntu') && 'quay.io/pypa/manylinux2014_x86_64' || null }}
+    timeout-minutes: 360
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Setup TORCH_CUDA_ARCH_LIST Env Variables
+        run: |
+          if [ "${{ inputs.torch_version }}" == "2.1.0" ]; then
+            echo "TORCH_CUDA_ARCH_LIST=7.0+PTX 8.0+PTX 9.0+PTX" >> ${GITHUB_ENV}
+          else
+            echo "TORCH_CUDA_ARCH_LIST=7.0+PTX 8.0+PTX 9.0a 9.0+PTX" >> ${GITHUB_ENV}
+          fi
+      - id: cuda_info
+        shell: python
+        run: |
+          import os
+          import sys
+          print(sys.version)
+          cushort = "${{ inputs.cuda_short_version }}"
+          # https://github.com/Jimver/cuda-toolkit/blob/master/src/links/linux-links.ts
+          full_version, install_script = {
+            "124": ("12.4.0", "https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_550.54.14_linux.run"),
+            "121": ("12.1.0", "https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run"),
+            "118": ("11.8.0", "https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run"),
+            "117": ("11.7.1", "https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run"),
+            "116": ("11.6.2", "https://developer.download.nvidia.com/compute/cuda/11.6.2/local_installers/cuda_11.6.2_510.47.03_linux.run"),
+          }[cushort]
+          with open(os.environ['GITHUB_OUTPUT'], "r+") as fp:
+            fp.write("CUDA_VERSION=" + full_version + "\n")
+            fp.write("CUDA_VERSION_SUFFIX=cu" + cushort + "\n")
+            # fp.write("TORCH_ORG_S3_PATH=s3://pytorch/whl/" + cushort + "\n")
+            # fp.write("PUBLISH_PYPI=0\n")
+            fp.write("CUDA_INSTALL_SCRIPT=" + install_script + "\n")
+      - run: echo "CUDA_VERSION_SUFFIX=${{ steps.cuda_info.outputs.CUDA_VERSION_SUFFIX }}"
+      # - run: echo "TORCH_ORG_S3_PATH=${{ steps.cuda_info.outputs.TORCH_ORG_S3_PATH }}"
+      # - run: echo "PUBLISH_PYPI=${{ steps.cuda_info.outputs.PUBLISH_PYPI }}"
+
+      - name: Add H100 if nvcc 11.08+
+        shell: python
+        run: |
+          import os
+          import sys
+          print(sys.version)
+          cuda_short_version = "${{ inputs.cuda_short_version }}"
+          arch_list = os.environ["TORCH_CUDA_ARCH_LIST"]
+          if cuda_short_version not in ["116", "117"]:
+            arch_list += " 9.0"
+          with open(os.environ['GITHUB_ENV'], "r+") as fp:
+            fp.write("TORCH_CUDA_ARCH_LIST=" + arch_list + "\n")
+      - run: echo "${TORCH_CUDA_ARCH_LIST}"
+
+      - if: contains(inputs.os, 'ubuntu')
+        name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - if: runner.os == 'Linux'
+        name: (Linux) install cuda
+        run: |
+          set -Eeuo pipefail
+          # yum install wget git prename -y
+          # yum clean all --verbose
+          sudo apt update
+          sudo apt install -y wget git rename
+          sudo apt clean -y
+          sudo apt autoremove -y
+          wget -q "${{ steps.cuda_info.outputs.CUDA_INSTALL_SCRIPT }}" -O cuda.run
+          sudo sh ./cuda.run --silent --toolkit --toolkitpath=/usr/local/cuda || cat /tmp/cuda-installer.log || cat /var/log/cuda-installer.log
+          cat /tmp/nvidia-installer.log || cat /var/log/nvidia-installer.log || true
+          rm ./cuda.run
+          echo "CUDA_HOME=/usr/local/cuda" >> ${GITHUB_ENV}
+          echo "PATH=/usr/local/cuda/bin:$PATH" >> ${GITHUB_ENV}
+
+      - if: runner.os == 'Linux'
+        name: (Linux) install python
+        run: |
+          sudo add-apt-repository ppa:deadsnakes/ppa -y
+          sudo apt update
+          sudo apt install -y python${{ inputs.python }} python${{ inputs.python }}-dev python${{ inputs.python }}-venv
+          sudo apt clean -y
+          sudo apt autoremove -y
+
+      - name: Recursive checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          path: "."
+          fetch-depth: 0 # for tags
+
+      - if: runner.os != 'Windows'
+        name: (Linux) Setup venv for linux
+        run: |
+          set -Eeuo pipefail
+          $PY -m venv venv
+          . ./venv/bin/activate
+          which pip
+          echo "PY=$(which python)" >> ${GITHUB_ENV}
+          echo "PATH=$PATH" >> ${GITHUB_ENV}
+          # echo "MAX_JOBS=2" >> ${GITHUB_ENV}
+
+      - name: Define version
+        # env:
+        #   VERSION_SOURCE: ${{ github.ref_type == 'tag' && 'tag' || 'dev' }}
+        run: |
+          set -Eeuo pipefail
+          git config --global --add safe.directory "*"
+          # Set build version to x.x.x.devYYYYMMDD+torchxxxcu111
+          torch_version_suffix=torch$(echo ${{ inputs.torch_version }} | sed 's/\.//g')
+          cuda_version_suffix=${{ steps.cuda_info.outputs.CUDA_VERSION_SUFFIX }}
+          # nightly_tag=$([[ ${VERSION_SOURCE} == 'tag' ]] && echo '' || echo '.dev'`date +%Y%m%d`)
+          echo "NEXFORT_BUILD_LOCAL_VERSION=${torch_version_suffix}${cuda_version_suffix}" >> ${GITHUB_ENV}
+          echo "NEXFORT_BUILD_LOCAL_VERSION=${torch_version_suffix}${cuda_version_suffix}" >> ${GITHUB_OUTPUT}
+          cat ${GITHUB_ENV}
+      - run: echo "NEXFORT_BUILD_LOCAL_VERSION=${LOCAL_VERSION}"
+
+      # - name: Setup proper pytorch dependency in "requirements.txt"
+      #   run: |
+      #     sed -i '/torch/d' ./requirements.txt
+      #     echo "torch==${{ inputs.torch_version }}" >> ./requirements.txt
+      #     cat ./requirements.txt
+
+      - if: runner.os == 'Windows'
+        name: (Windows) Setup Runner
+        uses: ./.github/actions/setup-windows-runner
+        with:
+          cuda: ${{ steps.cuda_info.outputs.CUDA_VERSION }}
+          python: ${{ inputs.python }}
+
+      # https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/15863
+      - name: Install dependencies
+        run: |
+          set -Eeuo pipefail
+          $PY -m pip install --upgrade pip
+          case "${{ inputs.torch_version }}" in
+            *dev*) use_nightly_torch=1 ;;
+            *    ) use_nightly_torch=0 ;;
+          esac
+          if [ ${use_nightly_torch} -eq 1 ]; then
+            $PY -m pip install --pre -U \
+              packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
+              -r <([ $NEXFORT_BUILD_CYTHONIZE -eq 1 ] && echo Cython) \
+              "torch==${{ inputs.torch_version }}" \
+              -r requirements.txt --extra-index-url https://download.pytorch.org/whl/nightly/cu${{ inputs.cuda_short_version }} --no-cache-dir
+          else
+            $PY -m pip install -U \
+              packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
+              -r <([ $NEXFORT_BUILD_CYTHONIZE -eq 1 ] && echo Cython) \
+              "torch==${{ inputs.torch_version }}" \
+              -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cuda_short_version }} --no-cache-dir
+          fi
+
+      - name: Install CUDNN
+        run: |
+          set -Eeuo pipefail
+          has_cudnn=$($PY -c "import importlib.util; assert importlib.util.find_spec('nvidia.cudnn') is not None" && echo 1 || echo 0)
+          if [ ${has_cudnn} -eq 0 ]; then
+            cumajor=$(echo ${{ inputs.cuda_short_version }} | cut -c 1-2)
+            cudnn_required=$(python -c "import torch; cudnn_version = torch.backends.cudnn.version(); print(f'{cudnn_version // (10000 if cudnn_version >= 90000 else 1000)}.{(cudnn_version // 100) % 10}')")
+            $PY -c "import importlib.util; assert importlib.util.find_spec('nvidia.cudnn') is not None" || $PY -m pip install "nvidia-cudnn-cu${cumajor}~=${cudnn_required}"
+          fi
+
+      - name: Build wheel
+        run: |
+          $PY setup.py bdist_wheel -d dist/ -k $PLAT_ARG
+        env:
+          PLAT_ARG: ${{ contains(inputs.os, 'ubuntu') && '--plat-name manylinux2014_x86_64' || '' }}
+
+      - run: du -h dist/*
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
+          path: dist/*.whl
+# Note: it might be helpful to have additional steps that test if the built wheels actually work
