@@ -67,7 +67,11 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        path: dist
+        path: artifact_dist
+    - name: Move wheels to dist
+      run: |
+        mkdir -p dist
+        mv artifact_dist/**/*.whl dist/
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
