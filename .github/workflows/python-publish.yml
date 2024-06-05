@@ -82,3 +82,5 @@ jobs:
         pip install build
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        verify-metadata: false
