@@ -14,6 +14,7 @@ on:
   push:
     branches:
       - add-workflow
+  workflow_dispatch:
 
 permissions:
   contents: read
