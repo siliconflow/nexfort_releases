@@ -1,0 +1,87 @@
+# This workflow will upload a Python Package using Twine when a release is created
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Upload Python Package
+
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - add-workflow
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # IMPORTANT: this permission is mandatory for trusted publishing
+  id-token: write
+
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-20.04
+          # - windows-2019
+          # - 8-core-ubuntu
+          # - windows-8-core
+        python:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+        torch_version:
+          # - "2.1.0"
+          # - "2.2.0"
+          - "2.3.0"
+          # - "2.4.0.dev20240507"
+        cuda_short_version:
+          # - "118"
+          - "121"
+          # - "124"
+        exclude:
+          - torch_version: "2.1.0"
+            cuda_short_version: "124"
+          - torch_version: "2.2.0"
+            cuda_short_version: "124"
+          - torch_version: "2.3.0"
+            cuda_short_version: "124"
+    uses: ./.github/workflows/wheels_build.yml
+    with:
+      os: ${{ matrix.os }}
+      python: ${{ matrix.python }}
+      torch_version: ${{ matrix.torch_version }}
+      cuda_short_version: ${{ matrix.cuda_short_version }}
+    secrets:
+      GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        path: artifact_dist
+    - name: Move wheels to dist
+      run: |
+        mkdir -p dist
+        mv artifact_dist/**/*.whl dist/
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        verify-metadata: false
