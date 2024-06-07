@@ -1,0 +1,53 @@
+[project]
+
+name = "nexfort"
+# version = "0.0.1"  # Remove any existing version parameter.
+dynamic = ["version", "dependencies", "optional-dependencies"]
+requires-python = ">=3.8"
+authors = [{ name = "SiliconFlow" }]
+description = "Next Generation Extension for PyTorch"
+
+[project.urls]
+
+Repository = "https://github.com/siliconflow/nexfort"
+
+[build-system]
+
+requires = ["setuptools>=64", "setuptools_scm>=8", "torch", "ninja", "wheel"]
+# build-backend = "setuptools.build_meta"
+
+[tool.black]
+
+line-length = 120
+target-version = ["py38"]
+
+manylinux-aarch64-image = "manylinux_2_28"
+manylinux-x86_64-image = "sameli/manylinux_2_28_x86_64_cuda_12.3"
+
+[tool.cibuildwheel.linux]
+build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
+skip = ["*-manylinux_i686", "*-musllinux*"]
+environment-pass = [
+  "BUILD_CUDA",
+  "CIBW_ARCHS",
+  "CMAKE_ARGS",
+  "CMAKE_GENERATOR",
+  "HOST_CCACHE_DIR",
+  "DATETIME",
+  "LLVM_PROJECT_COMMIT",
+  "MATRIX_OS",
+  "MLIR_WHEEL_VERSION",
+  "PIP_FIND_LINKS",
+  "PIP_NO_BUILD_ISOLATION",
+]
+before-build = [
+  "pip install -r requirements.txt",
+  "{project}/nexfort_releases/scripts/install_deps.sh",
+]
+repair-wheel-command = [
+  'PLAT=$(python setup.py --plat)',
+  'echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH',
+  'LD_LIBRARY_PATH=$(python -c "import mlir; print(mlir.__path__[0])")/lib',
+  'auditwheel repair -w {dest_dir} {wheel} --exclude libcuda.so.1 --plat $PLAT',
+  "pip uninstall -y mlir",
+]
