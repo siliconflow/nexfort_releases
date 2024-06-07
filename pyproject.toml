@@ -42,6 +42,9 @@ environment-pass = [
   "PY",
   "NEXFORT_BUILD_CYTHONIZE",
   "NEXFORT_BUILD_WITH_CUTLASS",
+  "TORCH_CUDA_ARCH_LIST",
+  "NEXFORT_BUILD_LOCAL_VERSION",
+  "CUDA_SHORT_VERSION",
 ]
 before-build = [
   "pip install -r requirements.txt",
