@@ -39,6 +39,9 @@ environment-pass = [
   "MLIR_WHEEL_VERSION",
   "PIP_FIND_LINKS",
   "PIP_NO_BUILD_ISOLATION",
+  "PY",
+  "NEXFORT_BUILD_CYTHONIZE",
+  "NEXFORT_BUILD_WITH_CUTLASS",
 ]
 before-build = [
   "pip install -r requirements.txt",
