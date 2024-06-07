@@ -1,5 +1,6 @@
 # Install dependencies
 set -Eeuo pipefail
+export PY=python3
 $PY -m pip install --upgrade pip
 case "${{ inputs.torch_version }}" in
   *dev*) use_nightly_torch=1 ;;

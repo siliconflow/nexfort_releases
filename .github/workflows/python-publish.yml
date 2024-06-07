@@ -21,6 +21,9 @@ permissions:
   # IMPORTANT: this permission is mandatory for trusted publishing
   id-token: write
 
+concurrency:
+  group: nexfort_releases-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
