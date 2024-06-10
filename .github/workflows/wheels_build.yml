@@ -167,7 +167,7 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      - if: runner.os == 'Linux'
+      - if: runner.os == 'Linux' && false
         name: (Linux) install cuda
         run: |
           set -Eeuo pipefail
