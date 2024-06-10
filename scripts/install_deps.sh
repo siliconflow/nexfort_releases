@@ -9,12 +9,12 @@ esac
 
 if [ ${use_nightly_torch} -eq 1 ]; then
   pip install --pre -U \
-    packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine Cython\
+    setuptools_scm ninja Cython\
     "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/nightly/cu${CUDA_SHORT_VERSION} --no-cache-dir
 else
   pip install -U \
-    packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine Cython\
+    setuptools_scm ninja Cython\
     "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${CUDA_SHORT_VERSION} --no-cache-dir
 fi
