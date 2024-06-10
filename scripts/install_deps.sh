@@ -1,5 +1,5 @@
 set -Eeuo pipefail
-export PY=python3
+export PY=python
 $PY -m pip install --upgrade pip
 
 case "${TORCH_VERSION}" in
