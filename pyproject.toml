@@ -47,4 +47,4 @@ environment-pass = [
   "CUDA_SHORT_VERSION",
   "TORCH_VERSION",
 ]
-before-build = ["{project}/nexfort_releases/scripts/install_deps.sh"]
+before-build = ["bash {project}/nexfort_releases/scripts/install_deps.sh"]
