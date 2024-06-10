@@ -8,19 +8,13 @@ case "${TORCH_VERSION}" in
 esac
 
 if [ ${use_nightly_torch} -eq 1 ]; then
-  if [ $NEXFORT_BUILD_CYTHONIZE -eq 1 ]; then
-    $PY -m pip install Cython
-  fi
   $PY -m pip install --pre -U \
-    packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
+    packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine Cython\
     "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/nightly/cu${CUDA_SHORT_VERSION} --no-cache-dir
 else
-  if [ $NEXFORT_BUILD_CYTHONIZE -eq 1 ]; then
-    $PY -m pip install Cython
-  fi
   $PY -m pip install -U \
-    packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
+    packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine Cython\
     "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${CUDA_SHORT_VERSION} --no-cache-dir
 fi
