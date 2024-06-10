@@ -21,10 +21,9 @@ requires = ["setuptools>=64", "setuptools_scm>=8", "torch", "ninja", "wheel"]
 line-length = 120
 target-version = ["py38"]
 
+[tool.cibuildwheel]
 manylinux-aarch64-image = "manylinux_2_28"
 manylinux-x86_64-image = "sameli/manylinux_2_28_x86_64_cuda_12.3"
-
-[tool.cibuildwheel]
 build-verbosity = 3
 
 [tool.cibuildwheel.linux]
