@@ -47,10 +47,7 @@ environment-pass = [
   "CUDA_SHORT_VERSION",
   "TORCH_VERSION",
 ]
-before-build = [
-  "pip install -r requirements.txt",
-  "{project}/nexfort_releases/scripts/install_deps.sh",
-]
+before-build = ["{project}/nexfort_releases/scripts/install_deps.sh"]
 repair-wheel-command = [
   'PLAT=$(python setup.py --plat)',
   'echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH',
