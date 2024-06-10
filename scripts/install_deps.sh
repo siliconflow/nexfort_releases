@@ -1,5 +1,6 @@
 set -Eeuo pipefail
-pip install --upgrade pip
+which python
+which pip
 
 case "${TORCH_VERSION}" in
   *dev*) use_nightly_torch=1 ;;
