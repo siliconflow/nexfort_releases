@@ -252,6 +252,7 @@ jobs:
       # https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/15863
       - name: Install dependencies
         run: |
+          echo "TORCH_VERSION=${{ inputs.torch_version }}" >> ${GITHUB_ENV}
           echo "CUDA_SHORT_VERSION=${{ inputs.cuda_short_version }}" >> ${GITHUB_ENV}
 
       - name: Install cibuildwheel

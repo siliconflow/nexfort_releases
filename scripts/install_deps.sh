@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 export PY=python3
 $PY -m pip install --upgrade pip
-case "${{ inputs.torch_version }}" in
+case "${TORCH_VERSION}" in
   *dev*) use_nightly_torch=1 ;;
   *    ) use_nightly_torch=0 ;;
 esac
@@ -10,13 +10,13 @@ if [ ${use_nightly_torch} -eq 1 ]; then
   $PY -m pip install --pre -U \
     packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
     -r <([ $NEXFORT_BUILD_CYTHONIZE -eq 1 ] && echo Cython) \
-    "torch==${{ inputs.torch_version }}" \
+    "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/nightly/cu${CUDA_SHORT_VERSION} --no-cache-dir
 else
   $PY -m pip install -U \
     packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
     -r <([ $NEXFORT_BUILD_CYTHONIZE -eq 1 ] && echo Cython) \
-    "torch==${{ inputs.torch_version }}" \
+    "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${CUDA_SHORT_VERSION} --no-cache-dir
 fi
 
