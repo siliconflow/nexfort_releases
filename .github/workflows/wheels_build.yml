@@ -207,8 +207,6 @@ jobs:
         with:
           path: nexfort_releases
 
-      - run: cp -r nexfort_releases/pyproject.toml pyproject.toml
-
       - if: runner.os != 'Windows'
         name: (Linux) Setup venv for linux
         run: |
@@ -259,7 +257,7 @@ jobs:
         run: python -m pip install cibuildwheel==2.18.1
 
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel --config-file nexfort_releases/pyproject.toml --output-dir wheelhouse
 
       - run: du -h dist/*
       - uses: actions/upload-artifact@v3
