@@ -64,3 +64,6 @@ environment-pass = [
   "TORCH_VERSION",
 ]
 before-build = ["bash {project}/nexfort_releases/scripts/install_deps.sh"]
+repair-wheel-command = [
+  "auditwheel repair --exclude libtorch.so -w {dest_dir} {wheel}",
+]
