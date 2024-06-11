@@ -167,7 +167,7 @@ jobs:
           docker-images: true
           swap-storage: true
 
-      - if: runner.os == 'Linux'
+      - if: runner.os == 'Linux' && false
         name: (Linux) install cuda
         run: |
           set -Eeuo pipefail
@@ -184,7 +184,7 @@ jobs:
           echo "CUDA_HOME=/usr/local/cuda" >> ${GITHUB_ENV}
           echo "PATH=/usr/local/cuda/bin:$PATH" >> ${GITHUB_ENV}
 
-      - if: runner.os == 'Linux'
+      - if: runner.os == 'Linux' && false
         name: (Linux) install python
         run: |
           sudo add-apt-repository ppa:deadsnakes/ppa -y
@@ -202,7 +202,12 @@ jobs:
           path: "."
           fetch-depth: 0 # for tags
 
-      - if: runner.os != 'Windows'
+      - name: Check nexfort_releases
+        uses: actions/checkout@v3
+        with:
+          path: downloads/nexfort_releases
+
+      - if: runner.os != 'Windows' && false
         name: (Linux) Setup venv for linux
         run: |
           set -Eeuo pipefail
@@ -245,45 +250,26 @@ jobs:
       # https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/15863
       - name: Install dependencies
         run: |
-          set -Eeuo pipefail
-          $PY -m pip install --upgrade pip
-          case "${{ inputs.torch_version }}" in
-            *dev*) use_nightly_torch=1 ;;
-            *    ) use_nightly_torch=0 ;;
-          esac
-          if [ ${use_nightly_torch} -eq 1 ]; then
-            $PY -m pip install --pre -U \
-              packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
-              -r <([ $NEXFORT_BUILD_CYTHONIZE -eq 1 ] && echo Cython) \
-              "torch==${{ inputs.torch_version }}" \
-              -r requirements.txt --extra-index-url https://download.pytorch.org/whl/nightly/cu${{ inputs.cuda_short_version }} --no-cache-dir
-          else
-            $PY -m pip install -U \
-              packaging wheel 'setuptools>=64,<70' setuptools_scm ninja twine \
-              -r <([ $NEXFORT_BUILD_CYTHONIZE -eq 1 ] && echo Cython) \
-              "torch==${{ inputs.torch_version }}" \
-              -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cuda_short_version }} --no-cache-dir
-          fi
+          echo "TORCH_VERSION=${{ inputs.torch_version }}" >> ${GITHUB_ENV}
+          echo "CUDA_SHORT_VERSION=${{ inputs.cuda_short_version }}" >> ${GITHUB_ENV}
 
-      - name: Install CUDNN
-        run: |
-          set -Eeuo pipefail
-          has_cudnn=$($PY -c "import importlib.util; assert importlib.util.find_spec('nvidia.cudnn') is not None" && echo 1 || echo 0)
-          if [ ${has_cudnn} -eq 0 ]; then
-            cumajor=$(echo ${{ inputs.cuda_short_version }} | cut -c 1-2)
-            cudnn_required=$(python -c "import torch; cudnn_version = torch.backends.cudnn.version(); print(f'{cudnn_version // (10000 if cudnn_version >= 90000 else 1000)}.{(cudnn_version // 100) % 10}')")
-            $PY -c "import importlib.util; assert importlib.util.find_spec('nvidia.cudnn') is not None" || $PY -m pip install "nvidia-cudnn-cu${cumajor}~=${cudnn_required}"
-          fi
+          major=$(echo ${{ inputs.python }} | cut -d. -f1)
+          minor=$(echo ${{ inputs.python }} | cut -d. -f2)
+          # Generate the pattern cp<MAJOR><MINOR>-*
+          # where <MAJOR> is the major version without the dot
+          # and <MINOR> is the minor version
+          echo "CIBW_BUILD=cp${major}${minor}-*" >> ${GITHUB_ENV}
 
-      - name: Build wheel
-        run: |
-          $PY setup.py bdist_wheel -d dist/ -k $PLAT_ARG
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.18.1
+
+      - name: Build wheels
         env:
-          PLAT_ARG: ${{ contains(inputs.os, 'ubuntu') && '--plat-name manylinux2014_x86_64' || '' }}
+          CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
+        run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
 
-      - run: du -h dist/*
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
-          path: dist/*.whl
+          path: wheelhouse/*.whl
 # Note: it might be helpful to have additional steps that test if the built wheels actually work
