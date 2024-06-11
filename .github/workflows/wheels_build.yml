@@ -201,6 +201,7 @@ jobs:
           submodules: recursive
           path: "."
           fetch-depth: 0 # for tags
+          ref: revert-86-static_link_for_openssl
 
       - name: Check nexfort_releases
         uses: actions/checkout@v3
