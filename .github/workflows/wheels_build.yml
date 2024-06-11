@@ -207,7 +207,7 @@ jobs:
         with:
           path: downloads/nexfort_releases
 
-      - if: runner.os != 'Windows'
+      - if: runner.os != 'Windows' && false
         name: (Linux) Setup venv for linux
         run: |
           set -Eeuo pipefail
