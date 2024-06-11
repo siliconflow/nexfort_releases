@@ -184,7 +184,7 @@ jobs:
           echo "CUDA_HOME=/usr/local/cuda" >> ${GITHUB_ENV}
           echo "PATH=/usr/local/cuda/bin:$PATH" >> ${GITHUB_ENV}
 
-      - if: runner.os == 'Linux'
+      - if: runner.os == 'Linux' && false
         name: (Linux) install python
         run: |
           sudo add-apt-repository ppa:deadsnakes/ppa -y
