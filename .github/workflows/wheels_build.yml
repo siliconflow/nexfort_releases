@@ -150,7 +150,7 @@ jobs:
             fp.write("TORCH_CUDA_ARCH_LIST=" + arch_list + "\n")
       - run: echo "${TORCH_CUDA_ARCH_LIST}"
 
-      - if: contains(inputs.os, 'ubuntu') && false
+      - if: contains(inputs.os, 'ubuntu')
         name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@v1.3.1
         with:

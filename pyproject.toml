@@ -13,7 +13,14 @@ Repository = "https://github.com/siliconflow/nexfort"
 
 [build-system]
 
-requires = ["setuptools>=64", "setuptools_scm>=8", "torch", "ninja", "wheel"]
+requires = [
+  "setuptools>=64",
+  "setuptools_scm>=8",
+  "torch",
+  "ninja",
+  "wheel",
+  "Cython",
+]
 # build-backend = "setuptools.build_meta"
 
 [tool.black]
