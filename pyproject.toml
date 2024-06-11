@@ -65,5 +65,5 @@ environment-pass = [
 ]
 before-build = ["bash {project}/nexfort_releases/scripts/install_deps.sh"]
 repair-wheel-command = [
-  "auditwheel repair --exclude libc10.so --exclude libc10_cuda.so --exclude libtorch.so --exclude libtorch_cpu.so --exclude libtorch_python.so -w {dest_dir} {wheel}",
+  "auditwheel repair --exclude libc10.so --exclude libc10_cuda.so --exclude libtorch.so --exclude libtorch_cuda.so --exclude libtorch_cpu.so --exclude libtorch_python.so -w {dest_dir} {wheel}",
 ]
