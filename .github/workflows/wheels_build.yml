@@ -253,6 +253,13 @@ jobs:
           echo "TORCH_VERSION=${{ inputs.torch_version }}" >> ${GITHUB_ENV}
           echo "CUDA_SHORT_VERSION=${{ inputs.cuda_short_version }}" >> ${GITHUB_ENV}
 
+          major=$(echo ${{ inputs.python }} | cut -d. -f1)
+          minor=$(echo ${{ inputs.python }} | cut -d. -f2)
+          # Generate the pattern cp<MAJOR><MINOR>-*
+          # where <MAJOR> is the major version without the dot
+          # and <MINOR> is the minor version
+          echo "CIBW_BUILD=cp${major}${minor}-*" >> ${GITHUB_ENV}
+
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.18.1
 
