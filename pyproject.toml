@@ -20,6 +20,8 @@ requires = [
   "ninja",
   "wheel",
   "Cython",
+  "astunparse",
+  "psutil",
 ]
 # build-backend = "setuptools.build_meta"
 
