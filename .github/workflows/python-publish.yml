@@ -48,7 +48,8 @@ jobs:
           # - "2.4.0.dev20240507"
         cuda_short_version:
           # - "118"
-          - "121"
+          # - "121"
+          - "123"
           # - "124"
         exclude:
           - torch_version: "2.1.0"
