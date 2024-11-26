@@ -275,8 +275,8 @@ jobs:
           CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
         run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
-          path: wheelhouse/*.whl
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
+      #     path: wheelhouse/*.whl
 # Note: it might be helpful to have additional steps that test if the built wheels actually work
