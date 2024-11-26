@@ -53,11 +53,13 @@ on:
         description: "Example: 3.10"
       torch_version:
         type: string
-        required: true
+        default: "2.4.0"
+        required: false
         description: "Example: 2.3.0 or 2.4.0.dev20240507"
       cuda_short_version:
         type: string
-        required: true
+        default: "121"
+        required: false
         description: "Example: 121 for 12.1"
       cythonize:
         type: string
