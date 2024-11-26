@@ -69,6 +69,10 @@ on:
         required: false
         default: "0"
         description: "Set to 1 to build with cutlass"
+      nexfort-ref:
+        description: ""
+        default: "main"
+        required: false
       max_jobs:
         type: string
         required: false
@@ -197,6 +201,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: siliconflow/nexfort
+          ref: uncython_transform_mode
           token: ${{ secrets.GH_NEX_PRIV_TOKEN }}
           submodules: recursive
           path: "."
