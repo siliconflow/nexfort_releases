@@ -41,6 +41,10 @@ on:
         required: true
   workflow_dispatch:
     inputs:
+      nexfort-ref:
+        description: ""
+        default: "main"
+        required: false
       os:
         type: string
         required: true
@@ -71,10 +75,6 @@ on:
         required: false
         default: "0"
         description: "Set to 1 to build with cutlass"
-      nexfort-ref:
-        description: ""
-        default: "main"
-        required: false
       max_jobs:
         type: string
         required: false
