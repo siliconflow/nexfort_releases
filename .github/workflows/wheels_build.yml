@@ -92,6 +92,9 @@ env:
   # MAX_JOBS: ${{ inputs.max_jobs }}
   DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
   TWINE_USERNAME: __token__
+  OSS_BUCKET: nexfort-test
+  OSS_WHEEL_HOUSE_DIR: ${{ matrix.entry }}/commit/${{ github.sha }}
+  OSS_GITHUB_REF_DIR: ${{ matrix.entry }}/${{ github.ref }}
 
 jobs:
   build_internal:
@@ -274,6 +277,14 @@ jobs:
         env:
           CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
         run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
+
+      - name: Upload wheelhouse
+        uses: ./.github/actions/upload_oss
+        with:
+          src_path: wheelhouse
+          oss_dst_path: oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
+          oss_access_key_id: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
       # - uses: actions/upload-artifact@v3
       #   with:
