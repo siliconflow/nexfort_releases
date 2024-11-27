@@ -159,22 +159,22 @@ jobs:
             fp.write("TORCH_CUDA_ARCH_LIST=" + arch_list + "\n")
       - run: echo "${TORCH_CUDA_ARCH_LIST}"
 
-      - if: contains(inputs.os, 'ubuntu')
-        name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
+      # - if: contains(inputs.os, 'ubuntu')
+      #   name: Free Disk Space (Ubuntu)
+      #   uses: jlumbroso/free-disk-space@v1.3.1
+      #   with:
+      #     # this might remove tools that are actually needed,
+      #     # if set to "true" but frees about 6 GB
+      #     tool-cache: false
 
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
+      #     # all of these default to true, but feel free to set to
+      #     # "false" if necessary for your workflow
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     docker-images: true
+      #     swap-storage: true
 
       - if: runner.os == 'Linux' && false
         name: (Linux) install cuda
@@ -278,11 +278,13 @@ jobs:
       #     CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
       #   run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
 
+      - run: pip install -U torch==${{ inputs.torch_version }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cuda_short_version }}
+
       - name: Generate Version file
         run: python tools/generate_env_meta.py
 
       - name: Upload wheelhouse
-        uses: ./.github/actions/upload_oss
+        uses: ./.github/actions/upload_oss .github/workflows/actions/upload_oss/action.yml
         with:
           src_path: src/nexfort/check_compiled_env_meta.py
           oss_dst_path: oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
