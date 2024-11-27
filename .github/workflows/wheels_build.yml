@@ -93,8 +93,8 @@ env:
   DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
   TWINE_USERNAME: __token__
   OSS_BUCKET: nexfort-test
-  OSS_WHEEL_HOUSE_DIR: ${{ matrix.entry }}/commit/${{ github.sha }}
-  OSS_GITHUB_REF_DIR: ${{ matrix.entry }}/${{ github.ref }}
+  OSS_WHEEL_HOUSE_DIR: commit/${{ github.sha }}
+  OSS_GITHUB_REF_DIR: ${{ github.ref }}
 
 jobs:
   build_internal:
