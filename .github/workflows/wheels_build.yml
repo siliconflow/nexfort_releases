@@ -80,6 +80,11 @@ on:
         required: false
         default: "1"
         description: "Set to the number of jobs to run in parallel"
+    secrets:
+      OSS_ACCESS_KEY_ID:
+        required: true
+      OSS_ACCESS_KEY_SECRET:
+        required: true
 
 # this yaml file can be cleaned up using yaml anchors, but they're not supported in github actions yet
 # https://github.com/actions/runner/issues/1182
