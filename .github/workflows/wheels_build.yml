@@ -302,7 +302,7 @@ jobs:
           region: oss-cn-beijing
           bucket: nexfort-tests
           assets: |
-            wheelhouse/**:/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
+            wheelhouse/*.whl:/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
       
       # - name: Upload oss
       #   run: |
