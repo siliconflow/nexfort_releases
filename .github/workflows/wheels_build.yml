@@ -299,7 +299,7 @@ jobs:
         with:
           key-id: ${{ env.OSS_ACCESS_KEY_ID }}
           key-secret: ${{ env.OSS_ACCESS_KEY_SECRET }}
-          region: oss-cn-beijing
+          region: oss-cn-hangzhou
           bucket: nexfort-test
           assets: |
             src/nexfort/__init__.py:/${{ env.OSS_WHEEL_HOUSE_DIR }}/
