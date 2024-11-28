@@ -322,7 +322,7 @@ jobs:
           upload_core_arg=""
           cat src/nexfort/__init__.py
           set -x
-          $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} src/nexfort/__init__.py oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
+          $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} src/nexfort/__init__.py oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
         shell: bash
         env:
           OSS_ACCESS_KEY_ID: ${{ secrets.oss_access_key_id }}
