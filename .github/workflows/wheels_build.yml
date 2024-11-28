@@ -293,40 +293,41 @@ jobs:
       #     oss_access_key_id: ${{ secrets.OSS_ACCESS_KEY_ID }}
       #     oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
-      # - name: Upload to oss
-      #   id: upload_to_oss
-      #   uses: tvrcgo/oss-action@master
-      #   with:
-      #     key-id: ${{ env.OSS_ACCESS_KEY_ID }}
-      #     key-secret: ${{ env.OSS_ACCESS_KEY_SECRET }}
-      #     region: oss-cn-beijing
-      #     bucket: nexfort-tests
-      #     assets: |
-      #       src/nexfort/__init__.py:/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
+      - name: Upload to oss
+        run: cat src/nexfort/__init__.py
+        id: upload_to_oss
+        uses: tvrcgo/oss-action@master
+        with:
+          key-id: ${{ env.OSS_ACCESS_KEY_ID }}
+          key-secret: ${{ env.OSS_ACCESS_KEY_SECRET }}
+          region: oss-cn-beijing
+          bucket: nexfort-tests
+          assets: |
+            src/nexfort/__init__.py:/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
       
-      - name: Upload oss
-        run: |
-          # if [ -z "$OSS_ACCESS_KEY_ID" ]
-          # then
-          #   exit 0
-          # fi
-          if [ ! -f "$HOME/ossutil64" ]; then
-            curl http://gosspublic.alicdn.com/ossutil/1.7.15/ossutil64 -o $HOME/ossutil64
-          fi
-          chmod 755 $HOME/ossutil64
-          $HOME/ossutil64 config -e oss-cn-beijing.aliyuncs.com -i ${{ secrets.oss_access_key_id }} -k ${{ secrets.oss_access_key_secret }}  -L EN -c $HOME/.ossutilconfig
-          dir_arg=""
-          if [ -d "src/nexfort/__init__.py" ]; then
-            dir_arg="--recursive"
-          fi
-          upload_core_arg=""
-          cat src/nexfort/__init__.py
-          set -x
-          $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} src/nexfort/__init__.py oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
-        shell: bash
-        env:
-          OSS_ACCESS_KEY_ID: ${{ secrets.oss_access_key_id }}
-          OSS_ACCESS_KEY_SECRET: ${{ secrets.oss_access_key_secret }}
+      # - name: Upload oss
+      #   run: |
+      #     # if [ -z "$OSS_ACCESS_KEY_ID" ]
+      #     # then
+      #     #   exit 0
+      #     # fi
+      #     if [ ! -f "$HOME/ossutil64" ]; then
+      #       curl http://gosspublic.alicdn.com/ossutil/1.7.15/ossutil64 -o $HOME/ossutil64
+      #     fi
+      #     chmod 755 $HOME/ossutil64
+      #     $HOME/ossutil64 config -e oss-cn-beijing.aliyuncs.com -i ${{ secrets.oss_access_key_id }} -k ${{ secrets.oss_access_key_secret }}  -L EN -c $HOME/.ossutilconfig
+      #     dir_arg=""
+      #     if [ -d "src/nexfort/__init__.py" ]; then
+      #       dir_arg="--recursive"
+      #     fi
+      #     upload_core_arg=""
+      #     cat src/nexfort/__init__.py
+      #     set -x
+      #     $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} src/nexfort/__init__.py oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
+      #   shell: bash
+      #   env:
+      #     OSS_ACCESS_KEY_ID: ${{ secrets.oss_access_key_id }}
+      #     OSS_ACCESS_KEY_SECRET: ${{ secrets.oss_access_key_secret }}
 
       # - uses: actions/upload-artifact@v3
       #   with:
