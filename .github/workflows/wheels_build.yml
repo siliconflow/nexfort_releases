@@ -97,7 +97,7 @@ env:
   # MAX_JOBS: ${{ inputs.max_jobs }}
   DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
   TWINE_USERNAME: __token__
-  OSS_BUCKET: nexfort-test
+  OSS_BUCKET: nexfort-tests
   OSS_WHEEL_HOUSE_DIR: commit/${{ github.sha }}
   OSS_GITHUB_REF_DIR: ${{ github.ref }}
   OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
