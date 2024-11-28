@@ -270,23 +270,18 @@ jobs:
           # and <MINOR> is the minor version
           echo "CIBW_BUILD=cp${major}${minor}-*" >> ${GITHUB_ENV}
 
-      # - name: Install cibuildwheel
-      #   run: python -m pip install cibuildwheel==2.18.1
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.18.1
 
       # - name: Build wheels
       #   env:
       #     CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
       #   run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
 
-      - run: python -m pip install -U torch==${{ inputs.torch_version }} --extra-index-url https://download.pytorch.org/whl/cu${{ inputs.cuda_short_version }}
-
-      - name: Generate Version file
-        run: python tools/generate_env_meta.py
-
       - name: Upload wheelhouse
         uses: ./.github/actions/upload_oss .github/workflows/actions/upload_oss/action.yml
         with:
-          src_path: src/nexfort/check_compiled_env_meta.py
+          src_path: src/nexfort/__init__.py
           oss_dst_path: oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
           oss_access_key_id: ${{ secrets.OSS_ACCESS_KEY_ID }}
           oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
