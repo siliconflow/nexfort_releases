@@ -294,7 +294,6 @@ jobs:
       #     oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
       - name: Upload to oss
-        run: cat src/nexfort/__init__.py
         id: upload_to_oss
         uses: tvrcgo/oss-action@master
         with:
