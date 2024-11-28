@@ -43,7 +43,7 @@ on:
     inputs:
       nexfort-ref:
         description: ""
-        default: "fix_wheel_build_error"
+        default: "add_build_whl_tool"
         required: false
       os:
         type: string
