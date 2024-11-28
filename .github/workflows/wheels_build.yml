@@ -321,7 +321,7 @@ jobs:
           fi
           upload_core_arg=""
           set -x
-          ll wheelhouse/
+          # ll wheelhouse/
           $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} wheelhouse/*.whl oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
         shell: bash
         env:
