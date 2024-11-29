@@ -4,6 +4,7 @@ on:
   workflow_call:
     inputs:
       nexfort-ref:
+        type: string
         default: "add_build_whl_tool"
         required: false
         description: ""
@@ -50,6 +51,7 @@ on:
   workflow_dispatch:
     inputs:
       nexfort-ref:
+        type: string
         description: ""
         default: "add_build_whl_tool"
         required: false
