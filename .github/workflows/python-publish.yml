@@ -41,21 +41,21 @@ jobs:
           - "3.10"
           - "3.11"
         torch_version:
-          # - "2.1.0"
-          # - "2.2.0"
           - "2.3.1"
           - "2.4.0"
           - "2.4.1"
           - "2.5.0"
           - "2.5.1"
-          # - "2.4.0.dev20240507"
         cuda_short_version:
-          # - "118"
           - "121"
           - "124"
         exclude:
           - torch_version: "2.3.1"
             cuda_short_version: "124"
+          - torch_version: "2.5.0"
+            python: "3.8"
+          - torch_version: "2.5.1"
+            python: "3.8"
     uses: ./.github/workflows/wheels_build.yml
     with:
       os: ${{ matrix.os }}
