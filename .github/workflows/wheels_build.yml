@@ -288,6 +288,8 @@ jobs:
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.18.1
+      
+      - run: cat downloads/nexfort_releases/scripts/install_deps.sh
 
       - name: Build wheels
         env:

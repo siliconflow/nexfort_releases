@@ -2,6 +2,8 @@ set -Eeuo pipefail
 which python
 which pip
 
+# install_deps in debug
+
 case "${TORCH_VERSION}" in
   *dev*) use_nightly_torch=1 ;;
   *    ) use_nightly_torch=0 ;;
