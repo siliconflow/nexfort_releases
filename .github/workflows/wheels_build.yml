@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       nexfort-ref:
-        description: ""
         default: "add_build_whl_tool"
         required: false
+        description: ""
       os:
         type: string
         required: true
