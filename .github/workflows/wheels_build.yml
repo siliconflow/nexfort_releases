@@ -246,7 +246,6 @@ jobs:
           # echo "MAX_JOBS=2" >> ${GITHUB_ENV}
 
       - name: Define version
-        if: false
         # env:
         #   VERSION_SOURCE: ${{ github.ref_type == 'tag' && 'tag' || 'dev' }}
         run: |
