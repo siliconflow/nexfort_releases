@@ -54,7 +54,7 @@ jobs:
           - "121"
           - "124"
         exclude:
-          - torch_version: "2.3.0"
+          - torch_version: "2.3.1"
             cuda_short_version: "124"
     uses: ./.github/workflows/wheels_build.yml
     with:

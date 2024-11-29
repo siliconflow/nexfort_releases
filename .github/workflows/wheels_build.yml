@@ -312,7 +312,7 @@ jobs:
           region: oss-cn-beijing
           bucket: nexfort-tests
           assets: |
-            wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.cuda_short_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
+            wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
       
       # - name: Upload oss
       #   run: |
@@ -332,7 +332,7 @@ jobs:
       #     upload_core_arg=""
       #     set -x
       #     # ll wheelhouse/
-      #     $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} wheelhouse/*.whl oss://${{ env.OSS_BUCKET }}/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.cuda_short_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
+      #     $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} wheelhouse/*.whl oss://${{ env.OSS_BUCKET }}/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
       #   shell: bash
       #   env:
       #     OSS_ACCESS_KEY_ID: ${{ secrets.oss_access_key_id }}
