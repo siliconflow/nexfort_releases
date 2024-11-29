@@ -3,6 +3,10 @@ name: wheels_build
 on:
   workflow_call:
     inputs:
+      nexfort-ref:
+        description: ""
+        default: "add_build_whl_tool"
+        required: false
       os:
         type: string
         required: true
@@ -38,6 +42,10 @@ on:
         description: "Set to the number of jobs to run in parallel"
     secrets:
       GH_NEX_PRIV_TOKEN:
+        required: true
+      OSS_ACCESS_KEY_ID:
+        required: true
+      OSS_ACCESS_KEY_SECRET:
         required: true
   workflow_dispatch:
     inputs:
@@ -98,7 +106,7 @@ env:
   DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
   TWINE_USERNAME: __token__
   OSS_BUCKET: nexfort-tests
-  OSS_WHEEL_HOUSE_DIR: commit/${{ github.sha }}
+  OSS_WHEEL_HOUSE_DIR: ${{ github.sha }}
   OSS_GITHUB_REF_DIR: ${{ github.ref }}
   OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
   OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
@@ -302,7 +310,7 @@ jobs:
           region: oss-cn-beijing
           bucket: nexfort-tests
           assets: |
-            wheelhouse/*.whl:/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
+            wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.cuda_short_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
       
       # - name: Upload oss
       #   run: |
@@ -322,7 +330,7 @@ jobs:
       #     upload_core_arg=""
       #     set -x
       #     # ll wheelhouse/
-      #     $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} wheelhouse/*.whl oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}/
+      #     $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} wheelhouse/*.whl oss://${{ env.OSS_BUCKET }}/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.cuda_short_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
       #   shell: bash
       #   env:
       #     OSS_ACCESS_KEY_ID: ${{ secrets.oss_access_key_id }}

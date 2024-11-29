@@ -43,13 +43,16 @@ jobs:
         torch_version:
           # - "2.1.0"
           # - "2.2.0"
-          # - "2.3.0"
+          - "2.3.1"
           - "2.4.0"
+          - "2.4.1"
+          - "2.5.0"
+          - "2.5.1"
           # - "2.4.0.dev20240507"
         cuda_short_version:
           # - "118"
           - "121"
-          # - "124"
+          - "124"
         exclude:
           - torch_version: "2.3.0"
             cuda_short_version: "124"
@@ -61,6 +64,8 @@ jobs:
       cuda_short_version: ${{ matrix.cuda_short_version }}
     secrets:
       GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
+      OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+      OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
   deploy:
     needs: build
