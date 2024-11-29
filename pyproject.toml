@@ -28,9 +28,9 @@ requires = [
 line-length = 120
 target-version = ["py38"]
 
-# [tool.cibuildwheel]
-# manylinux-aarch64-image = "manylinux_2_28"
-# manylinux-x86_64-image = "manylinux_2_28_x86_64_cuda_12.3"
+[tool.cibuildwheel]
+manylinux-aarch64-image = "manylinux_2_34"
+manylinux-x86_64-image = "pytorch/manylinux-builder:cuda12.4"
 
 [tool.cibuildwheel.linux]
 build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
