@@ -1,0 +1,73 @@
+[project]
+
+name = "nexfort"
+# version = "0.0.1"  # Remove any existing version parameter.
+dynamic = ["version", "dependencies", "optional-dependencies"]
+requires-python = ">=3.8"
+authors = [{ name = "SiliconFlow" }]
+description = "Next Generation Extension for PyTorch"
+
+[project.urls]
+
+Repository = "https://github.com/siliconflow/nexfort"
+
+[build-system]
+
+requires = [
+  "setuptools>=64",
+  "setuptools_scm>=8",
+  "numpy",
+  "torch",
+  "ninja",
+  "wheel",
+  "Cython",
+  "astunparse",
+  "psutil",
+]
+# build-backend = "setuptools.build_meta"
+
+[tool.black]
+
+line-length = 120
+target-version = ["py38"]
+
+[tool.cibuildwheel]
+manylinux-aarch64-image = "manylinux_2_28"
+manylinux-x86_64-image = "clack2024/manylinux_2_28_x86_64_cuda_12.4"
+
+[tool.cibuildwheel.linux]
+build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
+skip = [
+  "*-manylinux_i686",
+  "*-musllinux*",
+  "*aarch64*",
+  "*macosx*",
+  "*win*",
+  "*2014*",
+]
+environment-pass = [
+  "BUILD_CUDA",
+  "CIBW_ARCHS",
+  "CMAKE_ARGS",
+  "CMAKE_GENERATOR",
+  "HOST_CCACHE_DIR",
+  "DATETIME",
+  "LLVM_PROJECT_COMMIT",
+  "MATRIX_OS",
+  "MLIR_WHEEL_VERSION",
+  "PIP_FIND_LINKS",
+  "PIP_NO_BUILD_ISOLATION",
+  "PY",
+  "NEXFORT_BUILD_CYTHONIZE",
+  "NEXFORT_BUILD_WITH_CUTLASS",
+  "TORCH_CUDA_ARCH_LIST",
+  "NEXFORT_BUILD_LOCAL_VERSION",
+  "CUDA_SHORT_VERSION",
+  "TORCH_VERSION",
+]
+before-build = [
+  "bash {project}/downloads/nexfort_releases/scripts/install_deps.sh",
+]
+repair-wheel-command = [
+  "auditwheel repair --exclude libc10.so --exclude libc10_cuda.so --exclude libtorch.so --exclude libtorch_cuda.so --exclude libtorch_cpu.so --exclude libtorch_python.so -w {dest_dir} {wheel}",
+]
