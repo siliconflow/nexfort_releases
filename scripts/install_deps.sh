@@ -21,7 +21,8 @@ else
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${CUDA_SHORT_VERSION} --no-cache-dir
 fi
 
-apt install libfindbin-libs-perl
+sudo apt update
+sudo apt install libfindbin-libs-perl
 
 # Install NVIDIA cuDNN
 set -Eeuo pipefail
