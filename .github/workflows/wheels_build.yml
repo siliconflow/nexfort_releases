@@ -291,13 +291,17 @@ jobs:
       
       - run: cat downloads/nexfort_releases/scripts/install_deps.sh
 
-      - name: Build wheels
+      - if: inputs.cuda_short_version == '121'
+        name: Build wheels
         env:
           CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
-        if "{{  inputs.cuda_short_version  }}" == "121"
-          run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
-        esle:
-          run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject_cu124.toml --output-dir wheelhouse
+        run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
+
+      - if: inputs.cuda_short_version == '124'
+        name: Build wheels
+        env:
+          CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
+        run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject_cu124.toml --output-dir wheelhouse
 
       # - name: Upload wheelhouse
       #   uses: ./.github/actions/upload_oss .github/workflows/actions/upload_oss/action.yml
