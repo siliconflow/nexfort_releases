@@ -21,6 +21,8 @@ else
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${CUDA_SHORT_VERSION} --no-cache-dir
 fi
 
+pip install triton
+
 # Install NVIDIA cuDNN
 set -Eeuo pipefail
 has_cudnn=$(python -c "import importlib.util; assert importlib.util.find_spec('nvidia.cudnn') is not None" && echo 1 || echo 0)
