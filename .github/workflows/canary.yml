@@ -1,65 +1,11 @@
-name: wheels_build
-
+name: Canary
 on:
-  workflow_call:
-    inputs:
-      nexfort-ref:
-        type: string
-        default: "add_build_whl_tool"
-        required: false
-        description: ""
-      os:
-        type: string
-        required: true
-        default: "ubuntu-20.04"
-        description: "Example: ubuntu-20.04 or windows-2019"
-      python:
-        type: string
-        required: true
-        default: "3.10"
-        description: "Example: 3.10"
-      torch_version:
-        type: string
-        required: true
-        description: "Example: 2.3.0 or 2.4.0.dev20240507"
-      cuda_short_version:
-        type: string
-        required: true
-        description: "Example: 121 for 12.1"
-      cythonize:
-        type: string
-        required: false
-        default: "1"
-        description: "Set to 0 to disable cythonized build"
-      with_cutlass:
-        type: string
-        required: false
-        default: "0"
-        description: "Set to 1 to build with cutlass"
-      max_jobs:
-        type: string
-        required: false
-        default: "1"
-        description: "Set to the number of jobs to run in parallel"
-    secrets:
-      GH_NEX_PRIV_TOKEN:
-        required: true
-      OSS_ACCESS_KEY_ID:
-        required: true
-      OSS_ACCESS_KEY_SECRET:
-        required: true
   workflow_dispatch:
     inputs:
       nexfort-ref:
-        type: string
         description: ""
-        default: "add_build_whl_tool"
-        required: false
-      os:
-        type: string
+        default: "main"
         required: true
-        default: "ubuntu-20.04"
-        description: "Example: ubuntu-20.04 or windows-2019"
       python:
         type: string
         required: true
@@ -67,13 +13,11 @@ on:
         description: "Example: 3.10"
       torch_version:
         type: string
-        default: "2.4.0"
-        required: false
+        required: true
         description: "Example: 2.3.0 or 2.4.0.dev20240507"
       cuda_short_version:
         type: string
-        default: "121"
-        required: false
+        required: true
         description: "Example: 121 for 12.1"
       cythonize:
         type: string
@@ -90,15 +34,9 @@ on:
         required: false
         default: "1"
         description: "Set to the number of jobs to run in parallel"
-    secrets:
-      OSS_ACCESS_KEY_ID:
-        required: true
-      OSS_ACCESS_KEY_SECRET:
-        required: true
-
-# this yaml file can be cleaned up using yaml anchors, but they're not supported in github actions yet
-# https://github.com/actions/runner/issues/1182
-
+concurrency:
+  group: canary-${{ github.ref }}
+  cancel-in-progress: false
 env:
   # you need at least cuda 5.0 for some of the stuff compiled here.
   # TORCH_CUDA_ARCH_LIST: "5.0+PTX 6.0 6.1 7.0 7.5 8.0+PTX"
@@ -107,11 +45,9 @@ env:
   # MAX_JOBS: ${{ inputs.max_jobs }}
   DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
   TWINE_USERNAME: __token__
-  OSS_BUCKET: nexfort-tests
-  OSS_WHEEL_HOUSE_DIR: ${{ github.sha }}
-  OSS_GITHUB_REF_DIR: ${{ github.ref }}
-  OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
-  OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+  OSS_BUCKET: nexfort-test
+  OSS_WHEEL_HOUSE_DIR: ${{ matrix.entry }}/commit/${{ github.sha }}
+  OSS_GITHUB_REF_DIR: ${{ matrix.entry }}/${{ github.ref }}
 
 jobs:
   build_internal:
@@ -246,6 +182,7 @@ jobs:
           # echo "MAX_JOBS=2" >> ${GITHUB_ENV}
 
       - name: Define version
+        if: false
         # env:
         #   VERSION_SOURCE: ${{ github.ref_type == 'tag' && 'tag' || 'dev' }}
         run: |
@@ -288,66 +225,16 @@ jobs:
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.18.1
-      
-      - run: cat downloads/nexfort_releases/scripts/install_deps.sh
 
-      - if: inputs.cuda_short_version == '121'
-        name: Build wheels
+      - name: Build wheels
         env:
           CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
         run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject.toml --output-dir wheelhouse
 
-      - if: inputs.cuda_short_version == '124'
-        name: Build wheels
-        env:
-          CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
-        run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject_cu124.toml --output-dir wheelhouse
-
-      # - name: Upload wheelhouse
-      #   uses: ./.github/actions/upload_oss .github/workflows/actions/upload_oss/action.yml
-      #   with:
-      #     src_path: src/nexfort/__init__.py
-      #     oss_dst_path: oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
-      #     oss_access_key_id: ${{ secrets.OSS_ACCESS_KEY_ID }}
-      #     oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
-
-      - name: Upload to oss
-        id: upload_to_oss
-        uses: tvrcgo/oss-action@master
+      - name: Upload wheelhouse
+        uses: ./.github/actions/upload_oss
         with:
-          key-id: ${{ env.OSS_ACCESS_KEY_ID }}
-          key-secret: ${{ env.OSS_ACCESS_KEY_SECRET }}
-          region: oss-cn-beijing
-          bucket: nexfort-tests
-          assets: |
-            wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
-      
-      # - name: Upload oss
-      #   run: |
-      #     # if [ -z "$OSS_ACCESS_KEY_ID" ]
-      #     # then
-      #     #   exit 0
-      #     # fi
-      #     if [ ! -f "$HOME/ossutil64" ]; then
-      #       curl http://gosspublic.alicdn.com/ossutil/1.7.15/ossutil64 -o $HOME/ossutil64
-      #     fi
-      #     chmod 755 $HOME/ossutil64
-      #     $HOME/ossutil64 config -e oss-cn-beijing.aliyuncs.com -i ${{ secrets.oss_access_key_id }} -k ${{ secrets.oss_access_key_secret }}  -L EN -c $HOME/.ossutilconfig
-      #     dir_arg=""
-      #     if [ -d "wheelhouse/*.whl" ]; then
-      #       dir_arg="--recursive"
-      #     fi
-      #     upload_core_arg=""
-      #     set -x
-      #     # ll wheelhouse/
-      #     $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} wheelhouse/*.whl oss://${{ env.OSS_BUCKET }}/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
-      #   shell: bash
-      #   env:
-      #     OSS_ACCESS_KEY_ID: ${{ secrets.oss_access_key_id }}
-      #     OSS_ACCESS_KEY_SECRET: ${{ secrets.oss_access_key_secret }}
-
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
-      #     path: wheelhouse/*.whl
-# Note: it might be helpful to have additional steps that test if the built wheels actually work
+          src_path: wheelhouse
+          oss_dst_path: oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
+          oss_access_key_id: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
