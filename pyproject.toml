@@ -16,6 +16,7 @@ Repository = "https://github.com/siliconflow/nexfort"
 requires = [
   "setuptools>=64",
   "setuptools_scm>=8",
+  "numpy",
   "torch",
   "ninja",
   "wheel",
