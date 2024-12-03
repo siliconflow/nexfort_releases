@@ -110,8 +110,8 @@ env:
   OSS_BUCKET: nexfort-tests
   OSS_WHEEL_HOUSE_DIR: ${{ github.sha }}
   OSS_GITHUB_REF_DIR: ${{ github.ref }}
-  OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
-  OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+  # OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+  # OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
 jobs:
   build_internal:
@@ -312,6 +312,9 @@ jobs:
       #     oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
       - name: Upload to oss
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
         id: upload_to_oss
         uses: tvrcgo/oss-action@master
         with:
@@ -320,7 +323,7 @@ jobs:
           region: oss-cn-beijing
           bucket: nexfort-tests
           assets: |
-            wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
+            wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ github.sha }}/
       
       # - name: Upload oss
       #   run: |
