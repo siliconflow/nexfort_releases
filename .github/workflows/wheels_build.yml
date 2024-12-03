@@ -281,7 +281,6 @@ jobs:
           echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
       
       - name: Print env
-        if: ${{ inputs.is_priv }}
         run: |
           env
       
