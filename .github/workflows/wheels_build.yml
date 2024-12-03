@@ -273,6 +273,18 @@ jobs:
           cuda: ${{ steps.cuda_info.outputs.CUDA_VERSION }}
           python: ${{ inputs.python }}
 
+      - name: Set Private env
+        run: |
+          GITHUB_SHA=$(git rev-parse HEAD)
+          echo "OSS_DIR=branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "GITHUB_REF_NAME=${{ inputs.nexfort-ref }}" >> $GITHUB_ENV
+          echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+      
+      - name: Print env
+        if: ${{ inputs.is_priv }}
+        run: |
+          env
+      
       # https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/15863
       - name: Install dependencies
         run: |
@@ -310,18 +322,6 @@ jobs:
       #     oss_dst_path: oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
       #     oss_access_key_id: ${{ secrets.OSS_ACCESS_KEY_ID }}
       #     oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
-
-      - name: Set Private env
-        run: |
-          GITHUB_SHA=$(git rev-parse HEAD)
-          echo "OSS_DIR=branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${GITHUB_SHA}" >> $GITHUB_ENV
-          echo "GITHUB_REF_NAME=${{ inputs.nexfort-ref }}" >> $GITHUB_ENV
-          echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
-      
-      - name: Print env
-        if: ${{ inputs.is_priv }}
-        run: |
-          env
 
       - name: Upload to oss
         env:
