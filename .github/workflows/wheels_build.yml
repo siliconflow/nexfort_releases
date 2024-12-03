@@ -342,9 +342,7 @@ jobs:
           OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
         run: |
           python3 -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-          python3 -m pip install oss2 beautifulsoup4 pyopenssl --user
-          python3 -m pip install pip --upgrade
-          python3 -m pip install pyopenssl --upgrade
+          python3 -m pip install oss2 beautifulsoup4 pyopenssl==24.3.0 --user
           python3 tools/create_pip_index.py --dir_key ${{ env.OSS_DIR }} -b ${{ env.OSS_BUCKET }} \
             --index_key=branch/${{ env.GITHUB_REF_NAME }}/$cu{{ inputs.cuda_short_version }}/index.html \
             --index_key=${{ env.OSS_DIR }}/index.html \
