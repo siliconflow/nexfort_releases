@@ -275,7 +275,7 @@ jobs:
 
       - name: Set Private env
         run: |
-          GITHUB_SHA=$(cd nexfort/ && git rev-parse HEAD)
+          GITHUB_SHA=$(cd src/ && git rev-parse HEAD)
           echo "OSS_DIR=branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${GITHUB_SHA}" >> $GITHUB_ENV
           echo "GITHUB_REF_NAME=${{ inputs.nexfort-ref }}" >> $GITHUB_ENV
           echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
