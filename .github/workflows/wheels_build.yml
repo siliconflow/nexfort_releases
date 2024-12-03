@@ -336,6 +336,18 @@ jobs:
           assets: |
             wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ github.sha }}/
       
+      - name: Update pip index
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          python3 -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+          python3 -m pip install oss2 beautifulsoup4 --user
+          python3 tools/create_pip_index.py --dir_key ${{ env.OSS_DIR }} -b ${{ env.OSS_BUCKET }} \
+            --index_key=branch/${{ env.GITHUB_REF_NAME }}/$cu{{ inputs.cuda_short_version }}/index.html \
+            --index_key=${{ env.OSS_DIR }}/index.html \
+            --index_key=branch/${{ env.GITHUB_REF_NAME }}/date/${{ needs.generate-build-matrix.outputs.formatted_date }}/$cu{{ inputs.cuda_short_version }}/index.html
+      
       # - name: Upload oss
       #   run: |
       #     # if [ -z "$OSS_ACCESS_KEY_ID" ]
