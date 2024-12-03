@@ -344,7 +344,7 @@ jobs:
           region: oss-cn-beijing
           bucket: nexfort-tests
           assets: |
-            wheelhouse/**:/branch/${{ env.OSS_DIR }}/
+            wheelhouse/**:/${{ env.OSS_DIR }}/
       
       - name: Update pip index
         env:
