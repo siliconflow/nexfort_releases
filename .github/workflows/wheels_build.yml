@@ -114,6 +114,15 @@ env:
   # OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
 jobs:
+  generate-build-date:
+    name: "Generate build date"
+    runs-on: ubuntu-latest
+    outputs:
+      formatted_date: ${{ steps.date.outputs.formatted_date }}
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "formatted_date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
   build_internal:
     name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
     runs-on: ${{ inputs.os }}
@@ -123,6 +132,7 @@ jobs:
       PY: python${{ contains(inputs.os, 'ubuntu') && inputs.python || '3' }}
       NEXFORT_BUILD_CYTHONIZE: ${{ inputs.cythonize }}
       NEXFORT_BUILD_WITH_CUTLASS: ${{ inputs.with_cutlass }}
+    needs: [generate-build-date]
 
     # container: ${{ contains(inputs.os, 'ubuntu') && 'quay.io/pypa/manylinux2014_x86_64' || null }}
     timeout-minutes: 360
@@ -334,7 +344,7 @@ jobs:
           region: oss-cn-beijing
           bucket: nexfort-tests
           assets: |
-            wheelhouse/**:/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ env.GITHUB_SHA }}/
+            wheelhouse/**:/branch/${{ env.OSS_DIR }}/
       
       - name: Update pip index
         env:
@@ -344,9 +354,9 @@ jobs:
           python3 -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
           python3 -m pip install oss2 beautifulsoup4 pyopenssl==24.3.0 --user
           python3 tools/create_pip_index.py --dir_key ${{ env.OSS_DIR }} -b ${{ env.OSS_BUCKET }} \
-            --index_key=branch/${{ env.GITHUB_REF_NAME }}/cu${{ inputs.cuda_short_version }}/index.html \
+            --index_key=branch/${{ env.GITHUB_REF_NAME }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/index.html \
             --index_key=${{ env.OSS_DIR }}/index.html \
-            --index_key=branch/${{ env.GITHUB_REF_NAME }}/date/${{ needs.generate-build-matrix.outputs.formatted_date }}/cu${{ inputs.cuda_short_version }}/index.html
+            --index_key=branch/${{ env.GITHUB_REF_NAME }}/torch${{ inputs.torch_version }}/date/${{ needs.generate-build-date.outputs.formatted_date }}/cu${{ inputs.cuda_short_version }}/index.html
       
       # - name: Upload oss
       #   run: |
