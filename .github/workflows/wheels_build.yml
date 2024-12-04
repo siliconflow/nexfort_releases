@@ -8,6 +8,9 @@ on:
         default: "add_build_whl_tool"
         required: false
         description: ""
+      upload_oss:
+        required: false
+        type: boolean
       os:
         type: string
         required: true
@@ -55,6 +58,9 @@ on:
         description: ""
         default: "add_build_whl_tool"
         required: false
+      upload_oss:
+        required: true
+        type: boolean
       os:
         type: string
         required: true
@@ -108,10 +114,6 @@ env:
   DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
   TWINE_USERNAME: __token__
   OSS_BUCKET: nexfort-whl
-  OSS_WHEEL_HOUSE_DIR: ${{ github.sha }}
-  OSS_GITHUB_REF_DIR: ${{ github.ref }}
-  # OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
-  # OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
 jobs:
   generate-build-date:
@@ -283,7 +285,18 @@ jobs:
           cuda: ${{ steps.cuda_info.outputs.CUDA_VERSION }}
           python: ${{ inputs.python }}
 
-      - name: Set Private env
+      - if: inputs.nexfort-ref == 'main'
+        name: Set Private env
+        if: ${{ inputs.upload_oss }}
+        run: |
+          GITHUB_SHA=$(git rev-parse HEAD)
+          echo "OSS_DIR=torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "GITHUB_REF_NAME=${{ inputs.nexfort-ref }}" >> $GITHUB_ENV
+          echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
+      
+      - if: inputs.nexfort-ref != 'main'
+        name: Set Private env
+        if: ${{ inputs.upload_oss }}
         run: |
           GITHUB_SHA=$(git rev-parse HEAD)
           echo "OSS_DIR=branches/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${GITHUB_SHA}" >> $GITHUB_ENV
@@ -291,6 +304,7 @@ jobs:
           echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
       
       - name: Print env
+        if: ${{ inputs.upload_oss }}
         run: |
           env
       
@@ -309,8 +323,6 @@ jobs:
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.18.1
-      
-      - run: cat downloads/nexfort_releases/scripts/install_deps.sh
 
       - if: inputs.cuda_short_version == '121'
         name: Build wheels
@@ -324,29 +336,35 @@ jobs:
           CIBW_BUILD_FRONTEND: "pip; args: --no-build-isolation"
         run: python -m cibuildwheel --config-file downloads/nexfort_releases/pyproject_cu124.toml --output-dir wheelhouse
 
-      # - name: Upload wheelhouse
-      #   uses: ./.github/actions/upload_oss .github/workflows/actions/upload_oss/action.yml
-      #   with:
-      #     src_path: src/nexfort/__init__.py
-      #     oss_dst_path: oss://${{ env.OSS_BUCKET }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/${{ inputs.cuda_short_version }}
-      #     oss_access_key_id: ${{ secrets.OSS_ACCESS_KEY_ID }}
-      #     oss_access_key_secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
-
       - name: Upload to oss
-        env:
-          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
-          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        if: ${{ inputs.upload_oss }}
         id: upload_to_oss
         uses: tvrcgo/oss-action@master
         with:
-          key-id: ${{ env.OSS_ACCESS_KEY_ID }}
-          key-secret: ${{ env.OSS_ACCESS_KEY_SECRET }}
+          key-id: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          key-secret: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
           region: oss-cn-beijing
           bucket: ${{ env.OSS_BUCKET }}
           assets: |
             wheelhouse/**:/${{ env.OSS_DIR }}/
       
-      - name: Update pip index
+      - inputs.nexfort-ref == 'main'
+        name: Update pip index
+        if: ${{ inputs.upload_oss }}
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          python3 -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+          python3 -m pip install oss2 beautifulsoup4 pyopenssl==24.3.0 --user
+          python3 tools/create_pip_index.py --dir_key ${{ env.OSS_DIR }} -b ${{ env.OSS_BUCKET }} \
+            --index_key=torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/index.html \
+            --index_key=${{ env.OSS_DIR }}/index.html \
+            --index_key=torch${{ inputs.torch_version }}/date/${{ needs.generate-build-date.outputs.formatted_date }}/cu${{ inputs.cuda_short_version }}/index.html
+      
+      - inputs.nexfort-ref != 'main'
+        name: Update pip index
+        if: ${{ inputs.upload_oss }}
         env:
           OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
           OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
@@ -355,35 +373,11 @@ jobs:
           python3 -m pip install oss2 beautifulsoup4 pyopenssl==24.3.0 --user
           python3 tools/create_pip_index.py --dir_key ${{ env.OSS_DIR }} -b ${{ env.OSS_BUCKET }} \
             --index_key=branches/${{ env.GITHUB_REF_NAME }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/index.html \
-            --index_key=${{ env.OSS_DIR }}/index.html \
-            --index_key=branches/${{ env.GITHUB_REF_NAME }}/torch${{ inputs.torch_version }}/date/${{ needs.generate-build-date.outputs.formatted_date }}/cu${{ inputs.cuda_short_version }}/index.html
-      
-      # - name: Upload oss
-      #   run: |
-      #     # if [ -z "$OSS_ACCESS_KEY_ID" ]
-      #     # then
-      #     #   exit 0
-      #     # fi
-      #     if [ ! -f "$HOME/ossutil64" ]; then
-      #       curl http://gosspublic.alicdn.com/ossutil/1.7.15/ossutil64 -o $HOME/ossutil64
-      #     fi
-      #     chmod 755 $HOME/ossutil64
-      #     $HOME/ossutil64 config -e oss-cn-beijing.aliyuncs.com -i ${{ secrets.oss_access_key_id }} -k ${{ secrets.oss_access_key_secret }}  -L EN -c $HOME/.ossutilconfig
-      #     dir_arg=""
-      #     if [ -d "wheelhouse/*.whl" ]; then
-      #       dir_arg="--recursive"
-      #     fi
-      #     upload_core_arg=""
-      #     set -x
-      #     # ll wheelhouse/
-      #     $HOME/ossutil64 cp --disable-ignore-error --update ${dir_arg} ${upload_core_arg} wheelhouse/*.whl oss://${{ env.OSS_BUCKET }}/branch/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${{ env.OSS_WHEEL_HOUSE_DIR }}/
-      #   shell: bash
-      #   env:
-      #     OSS_ACCESS_KEY_ID: ${{ secrets.oss_access_key_id }}
-      #     OSS_ACCESS_KEY_SECRET: ${{ secrets.oss_access_key_secret }}
+            --index_key=${{ env.OSS_DIR }}/index.html
 
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
-      #     path: wheelhouse/*.whl
+      - uses: actions/upload-artifact@v3
+        if: ${{ !inputs.upload_oss }}
+        with:
+          name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
+          path: wheelhouse/*.whl
 # Note: it might be helpful to have additional steps that test if the built wheels actually work
