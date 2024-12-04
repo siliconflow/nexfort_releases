@@ -27,8 +27,6 @@ concurrency:
 
 jobs:
   build:
-    outputs:
-      pypi-publish: true
     strategy:
       fail-fast: false
       matrix:
@@ -68,9 +66,8 @@ jobs:
       OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
   deploy:
-    needs: [build]
+    needs: build
     runs-on: ubuntu-latest
-    if: needs.build.outputs.pypi-publish
     steps:
     - uses: actions/download-artifact@v3
       with:
