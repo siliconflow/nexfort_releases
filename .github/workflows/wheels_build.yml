@@ -285,18 +285,16 @@ jobs:
           cuda: ${{ steps.cuda_info.outputs.CUDA_VERSION }}
           python: ${{ inputs.python }}
 
-      - if: inputs.nexfort-ref == 'main'
+      - if: inputs.nexfort-ref == 'main' && inputs.upload_oss
         name: Set Private env
-        if: ${{ inputs.upload_oss }}
         run: |
           GITHUB_SHA=$(git rev-parse HEAD)
           echo "OSS_DIR=torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${GITHUB_SHA}" >> $GITHUB_ENV
           echo "GITHUB_REF_NAME=${{ inputs.nexfort-ref }}" >> $GITHUB_ENV
           echo "GITHUB_SHA=${GITHUB_SHA}" >> $GITHUB_ENV
       
-      - if: inputs.nexfort-ref != 'main'
+      - if: inputs.nexfort-ref != 'main' && inputs.upload_oss
         name: Set Private env
-        if: ${{ inputs.upload_oss }}
         run: |
           GITHUB_SHA=$(git rev-parse HEAD)
           echo "OSS_DIR=branches/${{ inputs.nexfort-ref }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/${GITHUB_SHA}" >> $GITHUB_ENV
@@ -348,9 +346,8 @@ jobs:
           assets: |
             wheelhouse/**:/${{ env.OSS_DIR }}/
       
-      - if: inputs.nexfort-ref == 'main'
+      - if: inputs.nexfort-ref == 'main' && inputs.upload_oss
         name: Update pip index
-        if: ${{ inputs.upload_oss }}
         env:
           OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
           OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
@@ -362,9 +359,8 @@ jobs:
             --index_key=${{ env.OSS_DIR }}/index.html \
             --index_key=torch${{ inputs.torch_version }}/date/${{ needs.generate-build-date.outputs.formatted_date }}/cu${{ inputs.cuda_short_version }}/index.html
       
-      - if: inputs.nexfort-ref != 'main'
+      - if: inputs.nexfort-ref != 'main' && inputs.upload_oss
         name: Update pip index
-        if: ${{ inputs.upload_oss }}
         env:
           OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
           OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
