@@ -9,15 +9,17 @@ esac
 
 if [ ${use_nightly_torch} -eq 1 ]; then
   pip install --pre -U \
-    setuptools_scm ninja Cython astunparse psutil \
+    numpy setuptools_scm ninja Cython astunparse psutil \
     "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/nightly/cu${CUDA_SHORT_VERSION} --no-cache-dir
 else
   pip install -U \
-    setuptools_scm ninja Cython astunparse psutil \
+    numpy setuptools_scm ninja Cython astunparse psutil \
     "torch==${TORCH_VERSION}" \
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${CUDA_SHORT_VERSION} --no-cache-dir
 fi
+
+pip install triton
 
 # Install NVIDIA cuDNN
 set -Eeuo pipefail
