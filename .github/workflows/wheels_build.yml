@@ -348,7 +348,7 @@ jobs:
           assets: |
             wheelhouse/**:/${{ env.OSS_DIR }}/
       
-      - inputs.nexfort-ref == 'main'
+      - if: inputs.nexfort-ref == 'main'
         name: Update pip index
         if: ${{ inputs.upload_oss }}
         env:
@@ -362,7 +362,7 @@ jobs:
             --index_key=${{ env.OSS_DIR }}/index.html \
             --index_key=torch${{ inputs.torch_version }}/date/${{ needs.generate-build-date.outputs.formatted_date }}/cu${{ inputs.cuda_short_version }}/index.html
       
-      - inputs.nexfort-ref != 'main'
+      - if: inputs.nexfort-ref != 'main'
         name: Update pip index
         if: ${{ inputs.upload_oss }}
         env:
