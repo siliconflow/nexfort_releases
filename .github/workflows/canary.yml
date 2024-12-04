@@ -1,0 +1,79 @@
+# This workflow will upload a Python Package using Twine when a release is created
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Upload Python Package
+
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - add-repair
+  workflow_dispatch:
+
+inputs:
+  nexfort-ref:
+    type: string
+    description: ""
+    default: "main"
+    required: false
+
+permissions:
+  contents: read
+  # IMPORTANT: this permission is mandatory for trusted publishing
+  id-token: write
+
+concurrency:
+  group: nexfort_releases-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_full_whls:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-20.04
+          # - windows-2019
+          # - 8-core-ubuntu
+          # - windows-8-core
+        python:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+        torch_version:
+          - "2.3.1"
+          - "2.4.0"
+          - "2.4.1"
+          - "2.5.0"
+          - "2.5.1"
+        cuda_short_version:
+          - "121"
+          - "124"
+        exclude:
+          - torch_version: "2.3.1"
+            cuda_short_version: "124"
+          - torch_version: "2.5.0"
+            python: "3.8"
+          - torch_version: "2.5.1"
+            python: "3.8"
+    uses: ./.github/workflows/wheels_build.yml
+    with:
+      nexfort-ref: ${{ inputs.nexfort-ref }}
+      python-publish: false
+      upload_oss: true
+      os: ${{ matrix.os }}
+      python: ${{ matrix.python }}
+      torch_version: ${{ matrix.torch_version }}
+      cuda_short_version: ${{ matrix.cuda_short_version }}
+    secrets:
+      GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
+      OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+      OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
