@@ -2,6 +2,12 @@ name: Publish To Github
 
 on:
   workflow_dispatch:
+    inputs:
+      max_parallel:
+        type: int
+        required: false
+        default: 1
+        description: "Max parallel num"
     secrets:
       GH_NEX_PRIV_TOKEN:
         required: true
@@ -53,5 +59,6 @@ jobs:
     with:
       torch_version: ${{ matrix.torch_version }}
       cuda_short_version: ${{ matrix.cuda_short_version }}
+      max_parallel: ${{ inputs.max_parallel }}
     secrets:
       GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
