@@ -1,11 +1,11 @@
-name: Publish Enterprise
+name: Publish Github
 
 on:
   workflow_dispatch:
   workflow_call:
 
 concurrency:
-  group: publish-enterprise-${{ github.ref }}
+  group: publish-github-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -48,4 +48,4 @@ jobs:
     with:
       torch_version: ${{ matrix.torch_version }}
       cuda_short_version: ${{ matrix.cuda_short_version }}
-      release_tag: "enterprise_torch${{ matrix.torch_version }}_cu${{ matrix.cuda_short_version }}"
+      release_tag: "torch${{ matrix.torch_version }}_cu${{ matrix.cuda_short_version }}"
