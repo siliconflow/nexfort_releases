@@ -2,7 +2,13 @@ name: Publish To Github
 
 on:
   workflow_dispatch:
+    secrets:
+      GH_NEX_PRIV_TOKEN:
+        required: true
   workflow_call:
+    secrets:
+      GH_NEX_PRIV_TOKEN:
+        required: true
 
 concurrency:
   group: publish-github-${{ github.ref }}
@@ -38,7 +44,14 @@ jobs:
           - torch_version: "2.3.1"
             cuda_short_version: "124"
 
+    permissions:
+      contents: read
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    
     uses: ./.github/workflows/release.yml
     with:
       torch_version: ${{ matrix.torch_version }}
       cuda_short_version: ${{ matrix.cuda_short_version }}
+    secrets:
+      GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}

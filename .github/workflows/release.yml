@@ -23,6 +23,9 @@ on:
         type: string
         required: false
         default: "https://nexfort-whl.oss-cn-beijing.aliyuncs.com"
+    secrets:
+      GH_NEX_PRIV_TOKEN:
+        required: true
 
 env:
   RELEASE_TAG: torch${{ inputs.torch_version }}_cu${{ inputs.cuda_short_version }}
@@ -65,7 +68,7 @@ jobs:
         uses: ncipollo/release-action@v1.12.0
         with:
           artifacts: "*.whl"
-          token: "${{ secrets.GITHUB_TOKEN }}"
+          token: "${{ secrets.GH_NEX_PRIV_TOKEN }}"
           tag: ${{ env.RELEASE_TAG }}
           name: "latest ${{ env.RELEASE_TAG }}"
           removeArtifacts: false
