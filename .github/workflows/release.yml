@@ -1,30 +1,12 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Publish pip packages to GH releases
+name: Upload pip packages to GH releases
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   # Allows you to run this workflow manually from the Actions tab
   workflow_call:
-    inputs:
-      torch_version:
-        type: string
-        required: false
-        default: "2.4.0"
-        description: "Example: 2.3.0 or 2.4.0"
-      cuda_short_version:
-        type: string
-        required: false
-        default: "121"
-        description: "Example: 121 for 12.1"
-      nexfort_index:
-        description: "index URL of nexfort"
-        type: string
-        required: false
-        default: "https://nexfort-whl.oss-cn-beijing.aliyuncs.com"
-  
-  workflow_dispatch:
     inputs:
       torch_version:
         type: string
@@ -72,7 +54,7 @@ jobs:
     needs: [extract_urls]
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       matrix: ${{ fromJson(needs.extract_urls.outputs.matrix) }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
