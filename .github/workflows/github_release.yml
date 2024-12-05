@@ -37,10 +37,6 @@ jobs:
         exclude:
           - torch_version: "2.3.1"
             cuda_short_version: "124"
-          - torch_version: "2.5.0"
-            python: "3.8"
-          - torch_version: "2.5.1"
-            python: "3.8"
     permissions:
       contents: write
 
