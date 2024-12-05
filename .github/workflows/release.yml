@@ -21,6 +21,22 @@ on:
         type: string
         required: false
         default: "https://nexfort-whl.oss-cn-beijing.aliyuncs.com"
+  
+  workflow_dispatch:
+    inputs:
+      torch_version:
+        type: string
+        required: true
+        description: "Example: 2.3.0 or 2.4.0"
+      cuda_short_version:
+        type: string
+        required: true
+        description: "Example: 121 for 12.1"
+      nexfort_index:
+        description: "index URL of nexfort"
+        type: string
+        required: false
+        default: "https://nexfort-whl.oss-cn-beijing.aliyuncs.com"
 
 env:
   RELEASE_TAG: torch${{ inputs.torch_version }}_cu${{ inputs.cuda_short_version }}
