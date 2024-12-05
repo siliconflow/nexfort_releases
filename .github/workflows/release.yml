@@ -56,14 +56,14 @@ jobs:
       # Runs a single command using the runners shell
       - name: Download file
         run: wget --quiet "${{ matrix.package.url }}"
-      # - name: Publish archives
-      #   uses: ncipollo/release-action@v1.12.0
-      #   with:
-      #     artifacts: "*.whl"
-      #     token: "${{ secrets.GITHUB_TOKEN }}"
-      #     tag: ${{ inputs.release_tag }}
-      #     name: "latest ${{ inputs.release_tag }}"
-      #     removeArtifacts: false
-      #     allowUpdates: true
-      #     replacesArtifacts: true
-      #     makeLatest: false
+      - name: Publish archives
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          artifacts: "*.whl"
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          tag: ${{ inputs.release_tag }}
+          name: "latest ${{ inputs.release_tag }}"
+          removeArtifacts: false
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: false
