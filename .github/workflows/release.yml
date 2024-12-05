@@ -42,7 +42,9 @@ jobs:
         run: |
           matrix=$(curl ${{ inputs.nexfort_index }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }} | grep -oh 'https.*\.whl' | jq -c -sR 'split("\n") | map(select(length > 0)) | map({python: (. | capture("(?<pyv>cp[0-9]+)-cp").pyv), url: .}) | unique_by(.python) | {package: .}')
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
-          echo ${{ matrix }}
+      - name: Print env
+        run: |
+          env
 
   # upload:
   #   # The type of runner that the job will run on
