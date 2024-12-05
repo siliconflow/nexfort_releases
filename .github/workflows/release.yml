@@ -24,7 +24,7 @@ on:
         required: false
         default: "https://nexfort-whl.oss-cn-beijing.aliyuncs.com"
       max_parallel:
-        type: int
+        type: number
         required: false
         default: 1
         description: "Max parallel num"
