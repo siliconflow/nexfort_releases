@@ -12,6 +12,12 @@ on:
       GH_RELEASE_TOKEN:
         required: true
   workflow_call:
+    inputs:
+      max_parallel:
+        type: string
+        required: false
+        default: "1"
+        description: "Max parallel num"
     secrets:
       GH_RELEASE_TOKEN:
         required: true
