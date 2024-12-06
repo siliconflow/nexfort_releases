@@ -9,8 +9,6 @@
 name: Canary
 
 on:
-  release:
-    types: [published]
   push:
     branches:
       - add-repair
