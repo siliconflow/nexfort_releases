@@ -62,7 +62,7 @@ jobs:
     needs: [extract_urls]
     strategy:
       fail-fast: false
-      max-parallel: ${{ inputs.max_parallel }}
+      max-parallel: ${{ fromJSON(inputs.max_parallel) }}
       matrix: ${{ fromJson(needs.extract_urls.outputs.matrix) }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
