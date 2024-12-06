@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Upload Python Package
+name: Publish Python Package
 
 on:
   release:
@@ -15,6 +15,11 @@ on:
     branches:
       - add-repair
   workflow_dispatch:
+    inputs:
+      publish_to_github:
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -132,3 +137,10 @@ jobs:
       GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
       OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
       OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+
+  deploy_github:
+    if: ${{ inputs.publish_to_github }}
+    needs: build_full_whls
+    uses: ./.github/workflows/github-publish.yml
+    secrets:
+      GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}

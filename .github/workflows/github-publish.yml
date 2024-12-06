@@ -1,0 +1,59 @@
+name: Publish To Github
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_parallel:
+        type: string
+        required: false
+        default: "1"
+        description: "Max parallel num"
+    secrets:
+      GH_RELEASE_TOKEN:
+        required: true
+  workflow_call:
+    secrets:
+      GH_RELEASE_TOKEN:
+        required: true
+
+concurrency:
+  group: publish-github-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate_id:
+    name: Generate ID of release
+    runs-on: ubuntu-latest
+    outputs:
+      formatted_date: ${{ steps.date.outputs.formatted_date }}
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "formatted_date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_OUTPUT
+
+  publish:
+    name: ${{ matrix.cuda_short_version }}
+    needs: [generate_id]
+    strategy:
+      fail-fast: false
+      matrix:
+        torch_version:
+          - "2.3.1"
+          - "2.4.0"
+          - "2.4.1"
+          - "2.5.0"
+          - "2.5.1"
+        cuda_short_version:
+          - "121"
+          - "124"
+        exclude:
+          - torch_version: "2.3.1"
+            cuda_short_version: "124"
+    
+    uses: ./.github/workflows/github_release.yml
+    with:
+      torch_version: ${{ matrix.torch_version }}
+      cuda_short_version: ${{ matrix.cuda_short_version }}
+      max_parallel: ${{ inputs.max_parallel }}
+    secrets:
+      GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
