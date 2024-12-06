@@ -49,11 +49,6 @@ jobs:
         exclude:
           - torch_version: "2.3.1"
             cuda_short_version: "124"
-
-    permissions:
-      contents: read
-      # IMPORTANT: this permission is mandatory for trusted publishing
-      id-token: write
     
     uses: ./.github/workflows/release.yml
     with:
