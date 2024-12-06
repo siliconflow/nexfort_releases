@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       max_parallel:
-        type: number
+        type: string
         required: false
-        default: 1
+        default: "1"
         description: "Max parallel num"
     secrets:
       GH_NEX_PRIV_TOKEN:
@@ -59,6 +59,6 @@ jobs:
     with:
       torch_version: ${{ matrix.torch_version }}
       cuda_short_version: ${{ matrix.cuda_short_version }}
-      max_parallel: inputs.max_parallel
+      max_parallel: ${{ inputs.max_parallel }}
     secrets:
       GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
