@@ -1,8 +1,28 @@
-name: Publish To Github
+# This is a basic workflow to help you get started with Actions
 
+name: Upload pip packages to GH releases
+
+# Controls when the workflow will run
 on:
-  workflow_dispatch:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_call:
     inputs:
+      torch_version:
+        type: string
+        required: false
+        default: "2.4.0"
+        description: "Example: 2.3.0 or 2.4.0"
+      cuda_short_version:
+        type: string
+        required: false
+        default: "121"
+        description: "Example: 121 for 12.1"
+      nexfort_index:
+        description: "index URL of nexfort"
+        type: string
+        required: false
+        default: "https://nexfort-whl.oss-cn-beijing.aliyuncs.com"
       max_parallel:
         type: string
         required: false
@@ -11,49 +31,52 @@ on:
     secrets:
       GH_RELEASE_TOKEN:
         required: true
-  workflow_call:
-    secrets:
-      GH_RELEASE_TOKEN:
-        required: true
 
-concurrency:
-  group: publish-github-${{ github.ref }}
-  cancel-in-progress: true
+env:
+  RELEASE_TAG: torch${{ inputs.torch_version }}_cu${{ inputs.cuda_short_version }}
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  generate_id:
-    name: Generate ID of release
+  # This workflow contains a single job called "build"
+  extract_urls:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
     outputs:
-      formatted_date: ${{ steps.date.outputs.formatted_date }}
+      matrix: ${{ steps.generete_json.outputs.matrix }}
     steps:
-      - name: Get current date
-        id: date
-        run: echo "formatted_date=$(date +'%Y-%m-%d-%H%M')" >> $GITHUB_OUTPUT
+      - run: sudo apt-get install jq
+      # Runs a single command using the runners shell
+      - id: generete_json
+        run: |
+          matrix=$(curl ${{ inputs.nexfort_index }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }} | grep -oh 'https.*\.whl' | jq -c -sR 'split("\n") | map(select(length > 0)) | map({python: (. | capture("(?<pyv>cp[0-9]+)-cp").pyv), url: .}) | unique_by(.python) | {package: .}')
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+      - name: Print env
+        run: |
+          env
 
-  publish:
-    name: ${{ matrix.cuda_short_version }}
-    needs: [generate_id]
+  upload:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    name: Upload ${{ matrix.package.python }}
+    needs: [extract_urls]
     strategy:
       fail-fast: false
-      matrix:
-        torch_version:
-          - "2.3.1"
-          - "2.4.0"
-          - "2.4.1"
-          - "2.5.0"
-          - "2.5.1"
-        cuda_short_version:
-          - "121"
-          - "124"
-        exclude:
-          - torch_version: "2.3.1"
-            cuda_short_version: "124"
-    
-    uses: ./.github/workflows/release.yml
-    with:
-      torch_version: ${{ matrix.torch_version }}
-      cuda_short_version: ${{ matrix.cuda_short_version }}
-      max_parallel: ${{ inputs.max_parallel }}
-    secrets:
-      GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+      max-parallel: ${{ fromJSON(inputs.max_parallel) }}
+      matrix: ${{ fromJson(needs.extract_urls.outputs.matrix) }}
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Runs a single command using the runners shell
+      - name: Download file
+        run: wget --quiet "${{ matrix.package.url }}"
+      - name: Publish archives
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          artifacts: "*.whl"
+          token: "${{ secrets.GH_RELEASE_TOKEN }}"
+          tag: ${{ env.RELEASE_TAG }}
+          name: "latest ${{ env.RELEASE_TAG }}"
+          removeArtifacts: false
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: false

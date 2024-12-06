@@ -135,6 +135,6 @@ jobs:
 
   deploy_github:
     needs: build_full_whls
-    uses: ./.github/workflows/github_release.yml
+    uses: ./.github/workflows/github-publish.yml
     secrets:
       GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
