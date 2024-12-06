@@ -15,6 +15,11 @@ on:
     branches:
       - add-repair
   workflow_dispatch:
+    inputs:
+      publish_to_github:
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -134,6 +139,7 @@ jobs:
       OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
   deploy_github:
+    if: ${{ inputs.publish_to_github }}
     needs: build_full_whls
     uses: ./.github/workflows/github-publish.yml
     secrets:
