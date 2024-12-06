@@ -9,11 +9,11 @@ on:
         default: "1"
         description: "Max parallel num"
     secrets:
-      GH_NEX_PRIV_TOKEN:
+      GH_RELEASE_TOKEN:
         required: true
   workflow_call:
     secrets:
-      GH_NEX_PRIV_TOKEN:
+      GH_RELEASE_TOKEN:
         required: true
 
 concurrency:
@@ -61,4 +61,4 @@ jobs:
       cuda_short_version: ${{ matrix.cuda_short_version }}
       max_parallel: ${{ inputs.max_parallel }}
     secrets:
-      GH_NEX_PRIV_TOKEN: ${{ secrets.GH_NEX_PRIV_TOKEN }}
+      GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
