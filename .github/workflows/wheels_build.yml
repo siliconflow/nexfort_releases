@@ -39,11 +39,11 @@ on:
         required: false
         default: "0"
         description: "Set to 1 to build with cutlass"
-      max_jobs:
-        type: string
-        required: false
-        default: "1"
-        description: "Set to the number of jobs to run in parallel"
+      # max_jobs:
+      #   type: string
+      #   required: false
+      #   default: "1"
+      #   description: "Set to the number of jobs to run in parallel"
       python-publish:
         required: false
         type: boolean
@@ -100,11 +100,11 @@ on:
         required: false
         default: "0"
         description: "Set to 1 to build with cutlass"
-      max_jobs:
-        type: string
-        required: false
-        default: "1"
-        description: "Set to the number of jobs to run in parallel"
+      # max_jobs:
+      #   type: string
+      #   required: false
+      #   default: "1"
+      #   description: "Set to the number of jobs to run in parallel"
       python-publish:
         required: false
         type: boolean
