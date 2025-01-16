@@ -47,6 +47,11 @@ on:
       python-publish:
         required: false
         type: boolean
+      canary:
+        type: string
+        required: false
+        default: "0"
+        description: "Canay compile"
     secrets:
       GH_NEX_PRIV_TOKEN:
         required: true
@@ -103,6 +108,11 @@ on:
       python-publish:
         required: false
         type: boolean
+      canary:
+        type: string
+        required: false
+        default: "0"
+        description: "Canay compile"
     secrets:
       OSS_ACCESS_KEY_ID:
         required: true
@@ -121,6 +131,8 @@ env:
   DISTUTILS_USE_SDK: 1 # otherwise distutils will complain on windows about multiple versions of msvc
   TWINE_USERNAME: __token__
   OSS_BUCKET: nexfort-whl
+  NEXFORT_COMPILE_CANARY: inputs.canary
+  NEXFORT_BRANCH_NAME: inputs.nexfort-ref
 
 jobs:
   generate-build-date:

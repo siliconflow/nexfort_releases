@@ -66,6 +66,7 @@ jobs:
       nexfort-ref: ${{ inputs.nexfort-ref }}
       python-publish: false
       upload_oss: true
+      canary: "1"
       os: ${{ matrix.os }}
       python: ${{ matrix.python }}
       torch_version: ${{ matrix.torch_version }}
