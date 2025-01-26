@@ -2,6 +2,14 @@ set -Eeuo pipefail
 which python
 which pip
 
+
+declare -A TORCH_VERSION2TRITON_VERSION
+TORCH_VERSION2TRITON_VERSION['2.3.1']='2.3.1'
+TORCH_VERSION2TRITON_VERSION['2.4.0']='3.0.0'
+TORCH_VERSION2TRITON_VERSION['2.4.1']='3.0.0'
+TORCH_VERSION2TRITON_VERSION['2.5.0']='3.1.0'
+TORCH_VERSION2TRITON_VERSION['2.5.1']='3.1.0'
+
 case "${TORCH_VERSION}" in
   *dev*) use_nightly_torch=1 ;;
   *    ) use_nightly_torch=0 ;;
@@ -19,7 +27,7 @@ else
     -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu${CUDA_SHORT_VERSION} --no-cache-dir
 fi
 
-pip install triton
+pip install triton==${TORCH_VERSION2TRITON_VERSION[${TORCH_VERSION}]}
 
 # Install NVIDIA cuDNN
 set -Eeuo pipefail

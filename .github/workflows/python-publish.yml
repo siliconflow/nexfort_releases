@@ -18,6 +18,10 @@ on:
         required: false
         type: boolean
         default: true
+      publish_to_pypi:
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -30,6 +34,7 @@ concurrency:
 
 jobs:
   build:
+    if: inputs.publish_to_pypi
     strategy:
       fail-fast: false
       matrix:
@@ -69,6 +74,7 @@ jobs:
       OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
 
   deploy:
+    if: inputs.publish_to_pypi
     needs: build
     runs-on: ubuntu-latest
     steps:
