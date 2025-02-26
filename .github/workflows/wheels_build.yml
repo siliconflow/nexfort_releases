@@ -391,7 +391,7 @@ jobs:
             --index_key=branches/${{ env.GITHUB_REF_NAME }}/torch${{ inputs.torch_version }}/cu${{ inputs.cuda_short_version }}/index.html \
             --index_key=${{ env.OSS_DIR }}/index.html
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ !inputs.upload_oss }}
         with:
           name: ${{ inputs.os }}-py${{ inputs.python }}-torch${{ inputs.torch_version }}+cu${{ inputs.cuda_short_version }}
